@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 // ── All image paths verified against files on disk ────────────────────────────
 const PROJECTS = [
@@ -230,8 +232,47 @@ export default function Portfolio({ lang = 'en' }) {
   const [scrollPos, setScrollPos] = useState(0)
   const [activeGroup, setActiveGroup] = useState('all')
   const [activeSub, setActiveSub] = useState(null)
+  // Start with the hardcoded static data — replace with API data if available
+  const [projects, setProjects] = useState(PROJECTS)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
+
+  // Try to fetch live data from backend; keep static fallback if it fails
+  useEffect(() => {
+    fetch(`${API_URL}/projects`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && Array.isArray(d.data) && d.data.length > 0) {
+          // Normalise API response into the same shape as PROJECTS
+          const apiProjects = d.data.map(p => {
+            let images = []
+            if (Array.isArray(p.galleryImages) && p.galleryImages.length) {
+              images = p.galleryImages.filter(Boolean)
+            } else if (typeof p.galleryImages === 'string' && p.galleryImages.trim()) {
+              images = p.galleryImages.split(/(?=http)/).map(s => s.trim()).filter(Boolean)
+            }
+            if (!images.length && p.coverImage) images = [p.coverImage]
+            return {
+              id: p.id,
+              title: p.title,
+              category: p.category,
+              images,
+              year: p.year,
+              type: p.type,
+              description: p.description,
+              isFeatured: p.isFeatured,
+              client: p.client,
+              services: Array.isArray(p.services) ? p.services
+                : typeof p.services === 'string'
+                  ? p.services.split(/\s{2,}|\n/).map(s => s.trim()).filter(Boolean)
+                  : [],
+            }
+          })
+          setProjects(apiProjects)
+        }
+      })
+      .catch(() => {/* keep static fallback */})
+  }, [])
 
   const openModal  = item => { setScrollPos(window.scrollY); setSelected(item); document.body.style.overflow = 'hidden' }
   const closeModal = () => { setSelected(null); document.body.style.overflow = ''; setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80) }
