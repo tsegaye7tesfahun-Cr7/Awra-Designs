@@ -5,12 +5,12 @@ import t from '../utils/translations'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-// Static fallback team
+// Hardcoded fallback — images served directly from public/
 const FALLBACK_TEAM = [
-  { name: 'Tesfahun Tsegaye', image: '/images/The Team/Tesfahun Tsegaye.webp' },
-  { name: 'Sarah Bekele',     image: '/images/The Team/Sarah Bekele.webp' },
-  { name: 'Daniel Haile',     image: '/images/The Team/Daniel Haile.webp' },
-  { name: 'Bereket Fikre',    image: '/images/The Team/Bereket Fikre.webp' },
+  { name: 'Tesfahun Tsegaye', nameAm: 'ተስፋሁን ፀጋዬ', role: 'Founder & Lead Architect', roleAm: 'መስራች እና ዋና አርክቴክት', image: '/images/The Team/Tesfahun Tsegaye.webp' },
+  { name: 'Sarah Bekele',     nameAm: 'ሣራ በቀለ',     role: 'Lead Interior Designer',  roleAm: 'ዋና ኢንቴሪየር ዲዛይነር',   image: '/images/The Team/Sarah Bekele.webp' },
+  { name: 'Daniel Haile',     nameAm: 'ዳንኤል ሃይሌ',   role: 'Senior Architect',         roleAm: 'ሲኒየር አርክቴክት',         image: '/images/The Team/Daniel Haile.webp' },
+  { name: 'Bereket Fikre',    nameAm: 'በረከት ፍቅሬ',   role: 'Brand Designer',           roleAm: 'ብራንድ ዲዛይነር',          image: '/images/The Team/Bereket Fikre.webp' },
 ]
 
 function FadeIn({ children, delay = 0, className = '' }) {
@@ -29,32 +29,27 @@ export default function About({ lang = 'en' }) {
   const [teamMembers, setTeamMembers] = useState(FALLBACK_TEAM)
 
   useEffect(() => {
-    fetch(`${API_URL}/about`)
+    fetch(`${API_URL}/about`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && d.data?.teamMembers?.length > 0) {
-          setTeamMembers(
-            d.data.teamMembers.map(m => ({
-              name:   m.name,
-              nameAm: m.nameAm,
-              role:   m.role,
-              roleAm: m.roleAm,
-              image:  m.imageUrl || '',
-            }))
-          )
+          setTeamMembers(d.data.teamMembers.map(m => ({
+            name:   m.name,   nameAm: m.nameAm,
+            role:   m.role,   roleAm: m.roleAm,
+            image:  m.imageUrl || '',
+          })))
         }
       })
       .catch(() => {/* keep fallback */})
   }, [])
 
-  const getMemberName = member => lang === 'am' ? (member.nameAm || tx.names?.[member.name] || member.name) : (tx.names?.[member.name] || member.name)
-  const getMemberRole = member => lang === 'am' ? (member.roleAm || tx.roles?.[member.name] || member.role || '') : (tx.roles?.[member.name] || member.role || '')
+  const getName = m => lang === 'am' ? (m.nameAm || m.name) : m.name
+  const getRole = m => lang === 'am' ? (m.roleAm || m.role) : m.role
 
   return (
     <section id="about" className="bg-[#0a0a0a]">
       <hr className="border-0 border-t border-neutral-800" />
 
-      {/* Statement */}
       <div className="section-padding">
         <div className="container-custom">
           <FadeIn>
@@ -79,7 +74,6 @@ export default function About({ lang = 'en' }) {
 
       <hr className="border-0 border-t border-neutral-800" />
 
-      {/* Team */}
       <div className="section-padding">
         <div className="container-custom">
           <FadeIn className="mb-14 md:mb-20">
@@ -104,13 +98,13 @@ export default function About({ lang = 'en' }) {
                 <p className="text-xs sm:text-sm font-medium text-white leading-snug">
                   <AnimatePresence mode="wait">
                     <motion.span key={lang + member.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                      {getMemberName(member)}
+                      {getName(member)}
                     </motion.span>
                   </AnimatePresence>
                 </p>
                 <AnimatePresence mode="wait">
                   <motion.p key={lang} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="label-text mt-1">
-                    {getMemberRole(member)}
+                    {getRole(member)}
                   </motion.p>
                 </AnimatePresence>
               </FadeIn>

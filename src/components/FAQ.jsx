@@ -107,7 +107,7 @@ export default function FAQ({ lang = 'en' }) {
   const [faqs, setFaqs] = useState(FALLBACK_FAQS)
 
   useEffect(() => {
-    fetch(`${API_URL}/faq`)
+    fetch(`${API_URL}/faq`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => { if (d.success && d.data?.length) setFaqs(d.data) })
       .catch(() => {/* keep fallback */})

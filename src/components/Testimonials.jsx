@@ -4,12 +4,12 @@ import { useInView } from 'react-intersection-observer'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-// Static fallback
+// Hardcoded fallback — exactly like Portfolio, no async needed
 const FALLBACK = [
-  { id: 1, name: 'Alemu Bekele',   role: 'Business Owner',    image: '/images/Testimonials/Alemu Bekele.webp',   text: 'Awra transformed our office into a modern, inspiring workspace. Their attention to detail and professional approach exceeded every expectation.' },
-  { id: 2, name: 'Marta Asfaw',    role: 'Homeowner',          image: '/images/Testimonials/Marta Asfaw.webp',    text: 'They understood our vision and brought it to life beautifully. Working with Awra was a delightful experience from start to finish.' },
-  { id: 3, name: 'Yonas Tadesse',  role: 'Restaurant Owner',   image: '/images/Testimonials/Yonas Tadesse.webp',  text: 'The interior design work completely transformed our restaurant. We receive compliments from guests every day. Excellent craftsmanship.' },
-  { id: 4, name: 'Tigist Mekonnen',role: 'Residential Client', image: '/images/Testimonials/Tigist Mekonnen.webp',text: "Professional, reliable, and deeply creative. The finishing work is impeccable, and the design perfectly reflects our family's character." },
+  { id: 1, name: 'Alemu Bekele',    role: 'Business Owner',    image: '/images/Testimonials/Alemu Bekele.webp',    text: 'Awra transformed our office into a modern, inspiring workspace. Their attention to detail and professional approach exceeded every expectation.' },
+  { id: 2, name: 'Marta Asfaw',     role: 'Homeowner',          image: '/images/Testimonials/Marta Asfaw.webp',     text: 'They understood our vision and brought it to life beautifully. Working with Awra was a delightful experience from start to finish.' },
+  { id: 3, name: 'Yonas Tadesse',   role: 'Restaurant Owner',   image: '/images/Testimonials/Yonas Tadesse.webp',   text: 'The interior design work completely transformed our restaurant. We receive compliments from guests every day. Excellent craftsmanship.' },
+  { id: 4, name: 'Tigist Mekonnen', role: 'Residential Client', image: '/images/Testimonials/Tigist Mekonnen.webp', text: "Professional, reliable, and deeply creative. The finishing work is impeccable and perfectly reflects our family's character." },
 ]
 
 export default function Testimonials() {
@@ -18,21 +18,19 @@ export default function Testimonials() {
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
 
+  // Try to load live data — keep fallback if it fails or is slow
   useEffect(() => {
-    fetch(`${API_URL}/testimonials`)
+    fetch(`${API_URL}/testimonials`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {
           setTestimonials(d.data.map(t => ({
-            id: t.id,
-            name: t.clientName,
-            role: t.position,
-            image: t.imageUrl || '',
-            text: t.text,
+            id: t.id, name: t.clientName, role: t.position,
+            image: t.imageUrl || '', text: t.text,
           })))
         }
       })
-      .catch(() => {/* keep fallback */})
+      .catch(() => {/* keep hardcoded fallback */})
   }, [])
 
   useEffect(() => {
@@ -51,6 +49,7 @@ export default function Testimonials() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-8 lg:gap-20 items-start"
           onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+
           <div className="flex flex-col gap-1">
             {testimonials.map((t, i) => (
               <button key={t.id} onClick={() => setCurrent(i)}

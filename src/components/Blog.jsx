@@ -5,57 +5,45 @@ import t from '../utils/translations'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-// ── Static fallback (shown until API responds or if it fails) ─────────────────
+// Hardcoded fallback — images served directly from public/
 const FALLBACK_POSTS = [
   {
-    id: 1,
-    image: '/images/Blog/Blog 1.jpg',
+    id: 1, image: '/images/Blog/Blog 1.jpg',
     category: 'Interior Design', categoryAm: 'ኢንቴሪየር ዲዛይን',
     date: 'Dec 15, 2024', readTime: '5 min read', readTimeAm: '5 ደቂቃ',
-    title: 'Top Interior Design Trends for 2026',
-    titleAm: 'ለ2026 ምርጥ ኢንቴሪየር ዲዛይን ትሬንዶች',
+    title: 'Top Interior Design Trends for 2026', titleAm: 'ለ2026 ምርጥ ኢንቴሪየር ዲዛይን ትሬንዶች',
     description: 'Sustainable materials, biophilic design, and smart integration — the ideas shaping interiors this year.',
     descriptionAm: 'ዘላቂ ቁሳቁሶች፣ ባዮፊሊክ ዲዛይን እና ዘመናዊ ቴክኖሎጂ — ዘንድሮ ኢንቴሪየሮችን የሚቀርጹ ሃሳቦች።',
     fullContent: `As we move through 2026, interior design is embracing new philosophies that prioritise sustainability, functionality, and personal well-being.\n\nSustainable materials are taking centre stage. Biophilic design remains strong. Colour palettes are shifting towards earthy tones and warm neutrals. The desire for craftsmanship is growing.`,
     fullContentAm: `በ2026 ኢንቴሪየር ዲዛይን ዘላቂነት፣ ተግባራዊነት እና ደህንነትን ቅደም ተከተል ወደሚሰጥ አቅጣጫ እየሄደ ነው።`,
   },
   {
-    id: 2,
-    image: '/images/Blog/Blog 2.jpg',
+    id: 2, image: '/images/Blog/Blog 2.jpg',
     category: 'Architecture', categoryAm: 'አርክቴክቸር',
     date: 'Dec 10, 2024', readTime: '8 min read', readTimeAm: '8 ደቂቃ',
-    title: 'Architectural Planning in Ethiopia: A Practical Guide',
-    titleAm: 'በኢትዮጵያ የአርክቴክቸር ዕቅድ — ተግባራዊ መመሪያ',
+    title: 'Architectural Planning in Ethiopia: A Practical Guide', titleAm: 'በኢትዮጵያ የአርክቴክቸር ዕቅድ — ተግባራዊ መመሪያ',
     description: 'Navigating permits, zoning, and local building codes for your next project in Addis Ababa.',
     descriptionAm: 'ለሚቀጥለው ፕሮጀክትዎ በአዲስ አበባ ፈቃዶችን፣ ዞኒንግን፣ እና የግንባታ ደንቦችን ለማለፍ።',
     fullContent: `Architectural planning in Ethiopia requires careful navigation of local regulations, cultural considerations, and environmental factors.\n\nBefore beginning any project, you will need permits from relevant authorities. The approval timeline typically runs four to eight weeks for standard projects.`,
     fullContentAm: `በኢትዮጵያ የአርክቴክቸር ዕቅድ ውጤታማ ለመሆን የአካባቢ ደንቦችን ማወቅ ያስፈልጋል።`,
   },
   {
-    id: 3,
-    image: '/images/Blog/Blog 3.jpg',
+    id: 3, image: '/images/Blog/Blog 3.jpg',
     category: 'Design Tips', categoryAm: 'የዲዛይን ምክሮች',
     date: 'Dec 5, 2024', readTime: '6 min read', readTimeAm: '6 ደቂቃ',
-    title: 'How Colour Shapes the Spaces We Live In',
-    titleAm: 'ቀለም የምንኖርባቸውን ቦታዎች እንዴት ይቀርጻል',
+    title: 'How Colour Shapes the Spaces We Live In', titleAm: 'ቀለም የምንኖርባቸውን ቦታዎች እንዴት ይቀርጻል',
     description: 'The psychology behind colour choices — and how to use them intentionally in your home or office.',
     descriptionAm: 'ከቀለም ምርጫ ጀርባ ያለው ሳይኮሎጂ — እና ቤትዎ ወይም ቢሮዎ ውስጥ ሆን ብለው ለመጠቀም።',
-    fullContent: `Colour psychology is one of the quieter tools in interior design. Blue promotes calm — ideal for bedrooms. Yellow brings energy — suited to kitchens. The most important principle is consistency.`,
+    fullContent: `Colour psychology is one of the quieter tools in interior design.\n\nBlue promotes calm — ideal for bedrooms. Yellow brings energy — suited to kitchens. The most important principle is consistency.`,
     fullContentAm: `የቀለም ሳይኮሎጂ ኢንቴሪየር ዲዛይን ውስጥ ዝምብሎ ሆኖ ከፍተኛ ተፅዕኖ ያሳድራሉ።`,
   },
 ]
 
-// Normalise API post → local shape
 function toPost(p) {
   return {
-    id: p.id,
-    image: p.coverImage || '/images/Blog/Blog 1.jpg',
-    category: p.category,
-    date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
-    readTime: p.readTime || '',
-    title: p.title,
-    description: p.excerpt || '',
-    fullContent: p.content || '',
+    id: p.id, image: p.coverImage || '/images/Blog/Blog 1.jpg',
+    category: p.category, date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+    readTime: p.readTime || '', title: p.title, description: p.excerpt || '', fullContent: p.content || '',
   }
 }
 
@@ -77,20 +65,14 @@ export default function Blog({ lang = 'en' }) {
   const [scrollPos, setScrollPos] = useState(0)
   const [copyDone, setCopyDone] = useState(false)
 
-  // Fetch live posts from backend; keep fallback until/if it responds
   useEffect(() => {
-    fetch(`${API_URL}/blog?limit=10`)
+    fetch(`${API_URL}/blog?limit=10`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
-      .then(d => {
-        if (d.success && Array.isArray(d.data) && d.data.length > 0) {
-          setPosts(d.data.map(toPost))
-        }
-      })
+      .then(d => { if (d.success && Array.isArray(d.data) && d.data.length > 0) setPosts(d.data.map(toPost)) })
       .catch(() => {/* keep fallback */})
   }, [])
 
-  const tx = t[lang]?.blog ?? { heading: 'Insights' }
-
+  const tx = t[lang]?.blog ?? {}
   const getTitle = p => lang === 'am' ? (p.titleAm || p.title) : p.title
   const getDesc  = p => lang === 'am' ? (p.descriptionAm || p.description) : p.description
   const getCat   = p => lang === 'am' ? (p.categoryAm || p.category) : p.category
@@ -154,7 +136,6 @@ export default function Blog({ lang = 'en' }) {
         </div>
       </div>
 
-      {/* Modal */}
       <AnimatePresence>
         {selected && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
@@ -179,15 +160,12 @@ export default function Blog({ lang = 'en' }) {
                   <div className="text-neutral-400 text-sm sm:text-base leading-relaxed whitespace-pre-line border-t border-neutral-900 pt-6">{getBody(selected)}</div>
                   <div className="mt-8 pt-6 border-t border-neutral-900 flex flex-wrap items-center gap-3">
                     <span className="label-text mr-2">Share</span>
-                    <button onClick={handleCopy}
-                      className="flex items-center gap-2 px-4 py-2 border border-neutral-800 hover:border-neutral-600 text-neutral-400 hover:text-white text-xs font-medium tracking-wide transition-colors">
+                    <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 border border-neutral-800 hover:border-neutral-600 text-neutral-400 hover:text-white text-xs font-medium tracking-wide transition-colors">
                       {copyDone ? 'Copied ✓' : 'Copy link'}
                     </button>
-                    <a href={`https://wa.me/?text=${encodeURIComponent(getTitle(selected) + ' ' + shareUrl())}`}
-                      target="_blank" rel="noopener noreferrer"
+                    <a href={`https://wa.me/?text=${encodeURIComponent(getTitle(selected) + ' ' + shareUrl())}`} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-neutral-800 hover:border-neutral-600 text-neutral-400 hover:text-white text-xs font-medium tracking-wide transition-colors">
-                      <img src="/images/whatsapp-color-svgrepo-com.svg" alt="" className="w-3.5 h-3.5" aria-hidden="true" />
-                      WhatsApp
+                      <img src="/images/whatsapp-color-svgrepo-com.svg" alt="" className="w-3.5 h-3.5" aria-hidden="true" />WhatsApp
                     </a>
                   </div>
                   <p className="mt-6 label-text text-center">Press <kbd className="px-1.5 py-0.5 border border-neutral-800 text-neutral-400 font-mono not-italic">ESC</kbd> to close</p>

@@ -239,7 +239,7 @@ export default function Portfolio({ lang = 'en' }) {
 
   // Try to fetch live data from backend; keep static fallback if it fails
   useEffect(() => {
-    fetch(`${API_URL}/projects`)
+    fetch(`${API_URL}/projects`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {

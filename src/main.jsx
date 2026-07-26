@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
-import { registerSW } from 'virtual:pwa-register'
 
-// Register service worker — update silently in background
-registerSW({ immediate: true })
+// Only register service worker in production — in dev it intercepts API calls and causes stale caching issues
+if (import.meta.env.PROD) {
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    registerSW({ immediate: true })
+  })
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
