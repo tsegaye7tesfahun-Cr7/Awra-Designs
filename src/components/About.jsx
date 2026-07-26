@@ -28,10 +28,9 @@ export default function About({ lang = 'en' }) {
   const tx = t[lang].about
   const [teamMembers, setTeamMembers] = useState(FALLBACK_TEAM)
 
-  // Fetch live team data from backend; keep fallback if it fails
   useEffect(() => {
     fetch(`${API_URL}/about`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && d.data?.teamMembers?.length > 0) {
           setTeamMembers(

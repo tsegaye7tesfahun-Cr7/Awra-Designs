@@ -45,26 +45,28 @@ export default function PWAInstallPrompt({ lang = 'en' }) {
     // Already installed or running as standalone — don't show
     if (isInStandaloneMode()) return
 
-    // Check if user already dismissed within 7 days
+    // Check if user already dismissed within 30 days
     const dismissed = localStorage.getItem('pwa-prompt-dismissed')
-    if (dismissed && Date.now() - Number(dismissed) < 7 * 24 * 60 * 60 * 1000) return
+    if (dismissed && Date.now() - Number(dismissed) < 30 * 24 * 60 * 60 * 1000) return
+
+    // Only show to returning visitors (not first visit)
+    const visitCount = parseInt(localStorage.getItem('pwa-visit-count') || '0') + 1
+    localStorage.setItem('pwa-visit-count', String(visitCount))
+    if (visitCount < 3) return  // wait until 3rd visit
 
     if (isIOS()) {
-      // Show iOS instructions after a short delay
-      const id = setTimeout(() => setIos(true), 3000)
+      const id = setTimeout(() => setIos(true), 10000)
       return () => clearTimeout(id)
     }
 
     const handler = (e) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      // Small delay so the page finishes loading before the prompt appears
-      setTimeout(() => setShow(true), 2500)
+      // Only show after 15 seconds of browsing
+      setTimeout(() => setShow(true), 15000)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
-
-    // Listen for successful install
     window.addEventListener('appinstalled', () => {
       setInstalled(true)
       setShow(false)

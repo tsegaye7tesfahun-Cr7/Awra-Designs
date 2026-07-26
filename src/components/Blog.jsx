@@ -80,7 +80,7 @@ export default function Blog({ lang = 'en' }) {
   // Fetch live posts from backend; keep fallback until/if it responds
   useEffect(() => {
     fetch(`${API_URL}/blog?limit=10`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {
           setPosts(d.data.map(toPost))

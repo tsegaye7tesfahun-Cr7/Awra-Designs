@@ -20,7 +20,7 @@ export default function Testimonials() {
 
   useEffect(() => {
     fetch(`${API_URL}/testimonials`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {
           setTestimonials(d.data.map(t => ({

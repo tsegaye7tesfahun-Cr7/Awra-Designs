@@ -108,7 +108,7 @@ export default function FAQ({ lang = 'en' }) {
 
   useEffect(() => {
     fetch(`${API_URL}/faq`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => { if (d.success && d.data?.length) setFaqs(d.data) })
       .catch(() => {/* keep fallback */})
   }, [])

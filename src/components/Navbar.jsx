@@ -50,11 +50,10 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
     { name: tx.contact,      id: 'contact'      },
   ]
 
-  // Mobile: shorter list — Testimonials and Blog removed
+  // Mobile: shorter list — Testimonials, Blog, and FAQ removed
   const mobileLinks = [
     { name: tx.work,    id: 'works'   },
     { name: tx.about,   id: 'about'   },
-    { name: tx.faq,     id: 'faq'     },
     { name: tx.contact, id: 'contact' },
   ]
 
