@@ -98,6 +98,26 @@ const PROJECTS = [
     ),
   },
   {
+    id: 'res-7',
+    category: 'Gym',
+    title: 'Home Gym Design',
+    year: '2024', type: 'Residential', isFeatured: false,
+    description: 'A fully equipped home gym designed for serious training — smart layout, premium flooring, integrated storage, and lighting that keeps you focused and motivated.',
+    images: [1,2,3,4].map(n =>
+      `/images/Projects/Residential Interiors/Gym/Gym ${n}.jpg`
+    ),
+  },
+  {
+    id: 'res-8',
+    category: 'Steam & Sauna',
+    title: 'Steam Room & Sauna',
+    year: '2024', type: 'Residential', isFeatured: false,
+    description: 'A private wellness retreat built into the home — natural wood, stone finishes, and custom steam and sauna installations designed for daily recovery and relaxation.',
+    images: [1,2,3,4].map(n =>
+      `/images/Projects/Residential Interiors/Steam & Sauna/Steam & Sauna ${n}.jpg`
+    ),
+  },
+  {
     id: 'com-1',
     category: 'Corporate Offices & Workspaces',
     title: 'Modern Corporate Office',
@@ -129,7 +149,7 @@ const PROJECTS = [
   },
 ]
 
-// ── Filter groups ─────────────────────────────────────────────────────────────
+// ── Static fallback groups (used if API is unavailable) ───────────────────────
 const GROUPS = [
   { id: 'all', label: 'All', subcategories: [] },
   {
@@ -149,6 +169,8 @@ const GROUPS = [
       { id: 'Luxury Bathrooms & Powder Rooms',   label: 'Bathrooms' },
       { id: 'Terraces & Verandas',               label: 'Terraces' },
       { id: 'Islamic Luxury Interiors',          label: 'Islamic Luxury' },
+      { id: 'Gym',                               label: 'Gym' },
+      { id: 'Steam & Sauna',                     label: 'Steam & Sauna' },
     ],
   },
   {
@@ -166,9 +188,20 @@ const GROUPS = [
   },
 ]
 
-function getGroupCats(groupId) {
+// Convert API group shape → internal GROUPS shape
+function buildGroupsFromApi(apiGroups) {
+  const allGroup = { id: 'all', label: 'All', subcategories: [] }
+  const rest = apiGroups.map(g => ({
+    id: g.label.toLowerCase().replace(/\s+/g, '-'),
+    label: g.label,
+    subcategories: (g.subcategories || []).map(s => ({ id: s, label: s })),
+  }))
+  return [allGroup, ...rest]
+}
+
+function getGroupCats(groupId, groups) {
   if (groupId === 'all') return null
-  return GROUPS.find(g => g.id === groupId)?.subcategories.map(s => s.id) || []
+  return groups.find(g => g.id === groupId)?.subcategories.map(s => s.id) || []
 }
 
 function FadeIn({ children, delay = 0, className = '' }) {
@@ -234,10 +267,12 @@ export default function Portfolio({ lang = 'en' }) {
   const [activeSub, setActiveSub] = useState(null)
   const [openDropdown, setOpenDropdown] = useState(null)
   const [projects, setProjects] = useState(PROJECTS)
+  const [groups, setGroups] = useState(GROUPS)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
 
   useEffect(() => {
+    // Fetch projects
     fetch(`${API_URL}/projects`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
@@ -260,11 +295,23 @@ export default function Portfolio({ lang = 'en' }) {
                   : [],
             }
           })
-          setProjects(apiProjects)
-          setGroups(buildGroups(apiProjects))
+          // Merge: keep static projects whose IDs aren't returned by the API
+          const apiIds = new Set(apiProjects.map(p => p.id))
+          const staticOnly = PROJECTS.filter(p => !apiIds.has(p.id))
+          setProjects([...apiProjects, ...staticOnly])
         }
       })
       .catch(() => {})
+
+    // Fetch groups — fall back to hardcoded GROUPS if unavailable
+    fetch(`${API_URL}/project-groups`)
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
+      .then(d => {
+        if (d.success && Array.isArray(d.data) && d.data.length > 0) {
+          setGroups(buildGroupsFromApi(d.data))
+        }
+      })
+      .catch(() => {}) // silently keep GROUPS fallback
   }, [])
 
   const openModal  = item => {
@@ -295,7 +342,7 @@ export default function Portfolio({ lang = 'en' }) {
   }, [selected, scrollPos])
   const handleGroup = id => { setActiveGroup(id); setActiveSub(null); setOpenDropdown(null) }
 
-  const groupCats = getGroupCats(activeGroup)
+  const groupCats = getGroupCats(activeGroup, groups)
   const visible   = projects.filter(p => {
     if (groupCats === null) return true
     if (activeSub) return p.category === activeSub
@@ -310,7 +357,7 @@ export default function Portfolio({ lang = 'en' }) {
   return (
     <section id="works" ref={ref} className="bg-[#0a0a0a]">
 
-      <div className="container-custom pt-12 md:pt-16 lg:pt-20 pb-0">
+      <div className="container-custom pt-4 md:pt-6 lg:pt-8 pb-0">
         {/* Heading */}
         <motion.div className="flex items-end justify-between mb-8 md:mb-10"
           initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}>
@@ -330,7 +377,7 @@ export default function Portfolio({ lang = 'en' }) {
 
           {/* Row 1 on mobile (All + first 2 groups), all on md+ */}
           <div className="flex items-center md:hidden">
-            {GROUPS.slice(0, 3).map(g => (
+            {groups.slice(0, 3).map(g => (
               <div key={g.id} className="relative flex-1"
                 onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
                 onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
@@ -341,7 +388,7 @@ export default function Portfolio({ lang = 'en' }) {
                       setActiveGroup(g.id); setActiveSub(null)
                     } else { handleGroup(g.id) }
                   }}
-                  className={`relative w-full py-3 label-text transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
+                  className={`relative w-full py-3 text-[12px] uppercase tracking-[0.18em] font-medium transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
                     ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
                   {g.label}
                   {g.subcategories.length > 0 && (
@@ -355,12 +402,12 @@ export default function Portfolio({ lang = 'en' }) {
                   <div className="absolute top-full left-0 mt-1 z-50">
                     <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
-                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                         All {g.label}
                       </button>
                       {g.subcategories.map(sub => (
                         <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
-                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                           {sub.label}
                         </button>
                       ))}
@@ -373,7 +420,7 @@ export default function Portfolio({ lang = 'en' }) {
 
           {/* Row 2 on mobile (last 2 groups) */}
           <div className="flex items-center border-t border-neutral-900 md:hidden">
-            {GROUPS.slice(3).map(g => (
+            {groups.slice(3).map(g => (
               <div key={g.id} className="relative flex-1"
                 onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
                 onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
@@ -384,7 +431,7 @@ export default function Portfolio({ lang = 'en' }) {
                       setActiveGroup(g.id); setActiveSub(null)
                     } else { handleGroup(g.id) }
                   }}
-                  className={`relative w-full py-3 label-text transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
+                  className={`relative w-full py-3 text-[12px] uppercase tracking-[0.18em] font-medium transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
                     ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
                   {g.label}
                   {g.subcategories.length > 0 && (
@@ -398,12 +445,12 @@ export default function Portfolio({ lang = 'en' }) {
                   <div className="absolute top-full left-0 mt-1 z-50">
                     <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
-                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                         All {g.label}
                       </button>
                       {g.subcategories.map(sub => (
                         <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
-                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                           {sub.label}
                         </button>
                       ))}
@@ -416,13 +463,13 @@ export default function Portfolio({ lang = 'en' }) {
 
           {/* Single row on md+ */}
           <div className="hidden md:flex items-center overflow-x-auto md:overflow-visible scrollbar-hide">
-            {GROUPS.map(g => (
+            {groups.map(g => (
               <div key={g.id} className="relative flex-shrink-0"
                 onMouseEnter={() => g.subcategories.length > 0 && setOpenDropdown(g.id)}
                 onMouseLeave={() => setOpenDropdown(null)}>
                 <button role="tab" aria-selected={activeGroup === g.id}
                   onClick={() => handleGroup(g.id)}
-                  className={`relative px-5 py-3.5 label-text transition-colors duration-200 whitespace-nowrap flex items-center gap-1
+                  className={`relative px-5 py-3.5 text-[13px] uppercase tracking-[0.18em] font-medium transition-colors duration-200 whitespace-nowrap flex items-center gap-1
                     ${activeGroup === g.id ? 'text-white' : 'text-neutral-600 hover:text-neutral-300'}`}>
                   {g.label}
                   {g.subcategories.length > 0 && (
@@ -436,12 +483,12 @@ export default function Portfolio({ lang = 'en' }) {
                   <div className="absolute top-full left-0 mt-1 z-50">
                     <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[160px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null) }}
-                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                         All {g.label}
                       </button>
                       {g.subcategories.map(sub => (
                         <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
-                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                           {sub.label}
                         </button>
                       ))}
@@ -498,7 +545,7 @@ export default function Portfolio({ lang = 'en' }) {
               </div>
               <div className="px-4 py-3 md:px-5 md:py-4 border-t border-neutral-900">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] md:text-xs font-medium text-white truncate">{item.title}</p>
+                  <p className="text-[13px] md:text-sm font-medium text-white truncate">{item.title}</p>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="label-text">{item.year}</span>
                     <button onClick={() => openModal(item)}
