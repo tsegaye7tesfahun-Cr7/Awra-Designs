@@ -232,18 +232,16 @@ export default function Portfolio({ lang = 'en' }) {
   const [scrollPos, setScrollPos] = useState(0)
   const [activeGroup, setActiveGroup] = useState('all')
   const [activeSub, setActiveSub] = useState(null)
-  // Start with the hardcoded static data — replace with API data if available
+  const [openDropdown, setOpenDropdown] = useState(null)
   const [projects, setProjects] = useState(PROJECTS)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
 
-  // Try to fetch live data from backend; keep static fallback if it fails
   useEffect(() => {
     fetch(`${API_URL}/projects`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {
-          // Normalise API response into the same shape as PROJECTS
           const apiProjects = d.data.map(p => {
             let images = []
             if (Array.isArray(p.galleryImages) && p.galleryImages.length) {
@@ -253,15 +251,9 @@ export default function Portfolio({ lang = 'en' }) {
             }
             if (!images.length && p.coverImage) images = [p.coverImage]
             return {
-              id: p.id,
-              title: p.title,
-              category: p.category,
-              images,
-              year: p.year,
-              type: p.type,
-              description: p.description,
-              isFeatured: p.isFeatured,
-              client: p.client,
+              id: p.id, title: p.title, category: p.category,
+              filter: p.filter, images, year: p.year, type: p.type,
+              description: p.description, isFeatured: p.isFeatured, client: p.client,
               services: Array.isArray(p.services) ? p.services
                 : typeof p.services === 'string'
                   ? p.services.split(/\s{2,}|\n/).map(s => s.trim()).filter(Boolean)
@@ -269,17 +261,42 @@ export default function Portfolio({ lang = 'en' }) {
             }
           })
           setProjects(apiProjects)
+          setGroups(buildGroups(apiProjects))
         }
       })
-      .catch(() => {/* keep static fallback */})
+      .catch(() => {})
   }, [])
 
-  const openModal  = item => { setScrollPos(window.scrollY); setSelected(item); document.body.style.overflow = 'hidden' }
-  const closeModal = () => { setSelected(null); document.body.style.overflow = ''; setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80) }
-  const handleGroup = id => { setActiveGroup(id); setActiveSub(null) }
+  const openModal  = item => {
+    setScrollPos(window.scrollY)
+    setSelected(item)
+    document.body.style.overflow = 'hidden'
+    // Push a history entry so the browser back button can close the modal
+    history.pushState({ modal: true }, '')
+  }
+  const closeModal = () => {
+    setSelected(null)
+    document.body.style.overflow = ''
+    setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80)
+  }
+
+  // ESC key — document-level so it works regardless of focus
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape' && selected) closeModal() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [selected, scrollPos])
+
+  // Mobile/tablet back button — fires when history entry is popped
+  useEffect(() => {
+    const onPop = () => { if (selected) closeModal() }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [selected, scrollPos])
+  const handleGroup = id => { setActiveGroup(id); setActiveSub(null); setOpenDropdown(null) }
 
   const groupCats = getGroupCats(activeGroup)
-  const visible   = PROJECTS.filter(p => {
+  const visible   = projects.filter(p => {
     if (groupCats === null) return true
     if (activeSub) return p.category === activeSub
     return groupCats.includes(p.category)
@@ -289,10 +306,9 @@ export default function Portfolio({ lang = 'en' }) {
   const grid       = visible.filter(p => !(p.isFeatured && p.id === featured?.id && activeGroup === 'all' && !activeSub))
   const showFeat   = !!featured && !activeSub && activeGroup === 'all'
   const total      = (showFeat ? 1 : 0) + grid.length
-  const currentGrp = GROUPS.find(g => g.id === activeGroup)
 
   return (
-    <section id="works" ref={ref} onKeyDown={e => e.key === 'Escape' && closeModal()} className="bg-[#0a0a0a]">
+    <section id="works" ref={ref} className="bg-[#0a0a0a]">
 
       <div className="container-custom pt-12 md:pt-16 lg:pt-20 pb-0">
         {/* Heading */}
@@ -307,47 +323,136 @@ export default function Portfolio({ lang = 'en' }) {
           <span className="label-text">{tx.projects(total)}</span>
         </motion.div>
 
-        {/* Row 1: Group tabs */}
+        {/* Group tabs — 2 rows on mobile, single row on md+ */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex items-center gap-0 overflow-x-auto scrollbar-hide border-b border-neutral-900 -mb-px"
+          className="relative border-b border-neutral-900 -mb-px"
           role="tablist" aria-label="Filter by group">
-          {GROUPS.map(g => (
-            <button key={g.id} role="tab" aria-selected={activeGroup === g.id}
-              onClick={() => handleGroup(g.id)}
-              className={`relative flex-shrink-0 px-5 py-3.5 label-text transition-colors duration-200 whitespace-nowrap
-                ${activeGroup === g.id ? 'text-white' : 'text-neutral-600 hover:text-neutral-300'}`}>
-              {g.label}
-              {activeGroup === g.id && (
-                <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white"
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }} />
-              )}
-            </button>
-          ))}
-        </motion.div>
 
-        {/* Row 2: Subcategory chips */}
-        <AnimatePresence>
-          {activeGroup !== 'all' && currentGrp?.subcategories.length > 0 && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden">
-              <div className="flex items-center gap-2 py-3 overflow-x-auto scrollbar-hide">
-                <button onClick={() => setActiveSub(null)}
-                  className={`flex-shrink-0 px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium border transition-colors whitespace-nowrap
-                    ${!activeSub ? 'border-white text-white' : 'border-neutral-800 text-neutral-600 hover:border-neutral-600 hover:text-neutral-300'}`}>
-                  All {currentGrp.label}
+          {/* Row 1 on mobile (All + first 2 groups), all on md+ */}
+          <div className="flex items-center md:hidden">
+            {GROUPS.slice(0, 3).map(g => (
+              <div key={g.id} className="relative flex-1"
+                onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
+                onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
+                <button role="tab" aria-selected={activeGroup === g.id}
+                  onClick={() => {
+                    if (g.subcategories.length > 0 && !window.matchMedia('(hover: hover)').matches) {
+                      setOpenDropdown(prev => prev === g.id ? null : g.id)
+                      setActiveGroup(g.id); setActiveSub(null)
+                    } else { handleGroup(g.id) }
+                  }}
+                  className={`relative w-full py-3 label-text transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
+                    ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
+                  {g.label}
+                  {g.subcategories.length > 0 && (
+                    <svg className={`w-2 h-2 transition-all duration-200 ${openDropdown === g.id ? 'opacity-80 rotate-180' : 'opacity-40'}`} viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
                 </button>
-                {currentGrp.subcategories.map(sub => (
-                  <button key={sub.id} onClick={() => setActiveSub(prev => prev === sub.id ? null : sub.id)}
-                    className={`flex-shrink-0 px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] font-medium border transition-colors whitespace-nowrap
-                      ${activeSub === sub.id ? 'border-white text-white' : 'border-neutral-800 text-neutral-600 hover:border-neutral-600 hover:text-neutral-300'}`}>
-                    {sub.label}
-                  </button>
-                ))}
+                {g.subcategories.length > 0 && openDropdown === g.id && (
+                  <div className="absolute top-full left-0 mt-1 z-50">
+                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
+                      <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
+                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        All {g.label}
+                      </button>
+                      {g.subcategories.map(sub => (
+                        <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
+                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            ))}
+          </div>
+
+          {/* Row 2 on mobile (last 2 groups) */}
+          <div className="flex items-center border-t border-neutral-900 md:hidden">
+            {GROUPS.slice(3).map(g => (
+              <div key={g.id} className="relative flex-1"
+                onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
+                onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
+                <button role="tab" aria-selected={activeGroup === g.id}
+                  onClick={() => {
+                    if (g.subcategories.length > 0 && !window.matchMedia('(hover: hover)').matches) {
+                      setOpenDropdown(prev => prev === g.id ? null : g.id)
+                      setActiveGroup(g.id); setActiveSub(null)
+                    } else { handleGroup(g.id) }
+                  }}
+                  className={`relative w-full py-3 label-text transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
+                    ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
+                  {g.label}
+                  {g.subcategories.length > 0 && (
+                    <svg className={`w-2 h-2 transition-all duration-200 ${openDropdown === g.id ? 'opacity-80 rotate-180' : 'opacity-40'}`} viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
+                </button>
+                {g.subcategories.length > 0 && openDropdown === g.id && (
+                  <div className="absolute top-full left-0 mt-1 z-50">
+                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
+                      <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
+                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        All {g.label}
+                      </button>
+                      {g.subcategories.map(sub => (
+                        <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
+                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Single row on md+ */}
+          <div className="hidden md:flex items-center overflow-x-auto md:overflow-visible scrollbar-hide">
+            {GROUPS.map(g => (
+              <div key={g.id} className="relative flex-shrink-0"
+                onMouseEnter={() => g.subcategories.length > 0 && setOpenDropdown(g.id)}
+                onMouseLeave={() => setOpenDropdown(null)}>
+                <button role="tab" aria-selected={activeGroup === g.id}
+                  onClick={() => handleGroup(g.id)}
+                  className={`relative px-5 py-3.5 label-text transition-colors duration-200 whitespace-nowrap flex items-center gap-1
+                    ${activeGroup === g.id ? 'text-white' : 'text-neutral-600 hover:text-neutral-300'}`}>
+                  {g.label}
+                  {g.subcategories.length > 0 && (
+                    <svg className={`w-2.5 h-2.5 transition-all duration-200 ${openDropdown === g.id ? 'opacity-80 rotate-180' : 'opacity-40'}`} viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
+                </button>
+                {g.subcategories.length > 0 && openDropdown === g.id && (
+                  <div className="absolute top-full left-0 mt-1 z-50">
+                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[160px] shadow-2xl shadow-black/80">
+                      <button onClick={() => { handleGroup(g.id); setActiveSub(null) }}
+                        className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                        All {g.label}
+                      </button>
+                      {g.subcategories.map(sub => (
+                        <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
+                          className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+        </motion.div>
       </div>
 
       {/* Featured full-bleed */}
@@ -377,7 +482,7 @@ export default function Portfolio({ lang = 'en' }) {
       <AnimatePresence mode="wait">
         <motion.div key={`${activeGroup}-${activeSub}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-900 mt-px">
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px lg:gap-4 xl:gap-6 bg-neutral-900 lg:bg-transparent mt-px">
           {grid.map((item, idx) => (
             <FadeIn key={item.id} delay={idx * 0.03} className="bg-[#0a0a0a] group cursor-pointer overflow-hidden">
               <div onClick={() => openModal(item)} className="relative overflow-hidden aspect-[16/9]">
@@ -428,8 +533,8 @@ export default function Portfolio({ lang = 'en' }) {
                 exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 className="relative w-full max-w-3xl bg-[#0f0f0f]" onClick={e => e.stopPropagation()}>
                 <button onClick={closeModal}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center text-neutral-500 hover:text-white transition-colors" aria-label="Close">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                  className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center bg-[#0a0a0a]/80 hover:bg-[#0a0a0a] text-neutral-300 hover:text-white transition-colors rounded-full border border-neutral-700" aria-label="Close">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                 </button>
                 <ImageGallery images={selected.images} title={selected.title} />
                 <div className="p-6 sm:p-8 md:p-10">
@@ -440,14 +545,14 @@ export default function Portfolio({ lang = 'en' }) {
                   </div>
                   <h2 className="font-display text-2xl sm:text-3xl font-medium text-white mb-4">{selected.title}</h2>
                   <p className="text-neutral-500 leading-relaxed text-sm max-w-xl">{selected.description}</p>
-                  <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-neutral-900">
+                  <div className="flex flex-wrap gap-0 mt-8 pt-6 border-t border-neutral-900">
                     <a href={`https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27m%20interested%20in%20a%20project%20similar%20to%20your%20${encodeURIComponent(selected.title)}.`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-6 py-2.5 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide hover:bg-cream transition-colors">
+                      className="flex items-center gap-2 px-5 py-3 label-text border border-neutral-800 text-neutral-400 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap">
                       <WaIcon />{tx.whatsappModal}
                     </a>
                     <button onClick={() => { closeModal(); setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 250) }}
-                      className="px-6 py-2.5 border border-neutral-800 text-neutral-400 text-xs font-medium tracking-wide hover:border-neutral-600 hover:text-white transition-colors">
+                      className="px-5 py-3 label-text border border-neutral-800 border-l-0 text-neutral-400 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap">
                       {tx.enquiry}
                     </button>
                   </div>

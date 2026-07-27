@@ -5,8 +5,8 @@ import { submitContact } from '../lib/api'
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v || '').trim())
 
 const services = {
-  en: ['Architecture', 'Interior Design', '3D Visualization', 'Finishing & Fit-out', 'Consultation'],
-  am: ['አርክቴክቸር', 'ኢንቴሪየር ዲዛይን', '3D ቪዥዋላይዜሽን', 'ፊኒሺንግ', 'ምክር'],
+  en: ['Architecture', 'Residential', 'Commercial', 'Outdoor'],
+  am: ['አርክቴክቸር', 'መኖሪያ', 'ንግድ', 'ውጭ'],
 }
 
 const copy = {
@@ -171,22 +171,25 @@ export default function QuoteModal({ isOpen, onClose, lang = 'en' }) {
             {/* Form */}
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
-              {/* Service chips */}
+              {/* Service chips — match Portfolio filter tab style */}
               <div>
                 <p className="label-text mb-3">{t.service}</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-0 border-b border-neutral-900">
                   {svcList.map((svc) => (
                     <button
                       type="button"
                       key={svc}
                       onClick={() => { setForm(p => ({ ...p, service: svc })); setTouched(p => ({ ...p, service: true })) }}
-                      className={`text-[10px] uppercase tracking-[0.18em] px-3 py-1.5 border transition-colors duration-200 ${
+                      className={`relative px-4 py-2.5 label-text transition-colors duration-200 whitespace-nowrap ${
                         form.service === svc
-                          ? 'border-white text-white bg-white/10'
-                          : 'border-neutral-800 text-neutral-500 hover:border-neutral-600 hover:text-neutral-300'
+                          ? 'text-white'
+                          : 'text-neutral-600 hover:text-neutral-300'
                       }`}
                     >
                       {svc}
+                      {form.service === svc && (
+                        <span className="absolute bottom-0 left-0 right-0 h-px bg-white" />
+                      )}
                     </button>
                   ))}
                 </div>
