@@ -370,99 +370,75 @@ export default function Portfolio({ lang = 'en' }) {
           <span className="label-text">{tx.projects(total)}</span>
         </motion.div>
 
-        {/* Group tabs — 2 rows on mobile, single row on md+ */}
+        {/* Group tabs */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative border-b border-neutral-900 -mb-px"
+          className="relative -mb-px"
           role="tablist" aria-label="Filter by group">
 
-          {/* Row 1 on mobile (All + first 2 groups), all on md+ */}
-          <div className="flex items-center md:hidden">
-            {groups.slice(0, 3).map(g => (
-              <div key={g.id} className="relative flex-1"
-                onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
-                onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
-                <button role="tab" aria-selected={activeGroup === g.id}
+          {/* ── MOBILE: vertical stack, subcategories expand inline ── */}
+          <div className="md:hidden border border-neutral-900">
+            {groups.map(g => (
+              <div key={g.id} className="border-b border-neutral-900 last:border-b-0">
+                {/* Main tab button */}
+                <button
+                  role="tab"
+                  aria-selected={activeGroup === g.id}
                   onClick={() => {
-                    if (g.subcategories.length > 0 && !window.matchMedia('(hover: hover)').matches) {
+                    if (g.subcategories.length > 0) {
                       setOpenDropdown(prev => prev === g.id ? null : g.id)
                       setActiveGroup(g.id); setActiveSub(null)
-                    } else { handleGroup(g.id) }
+                    } else {
+                      handleGroup(g.id)
+                    }
                   }}
-                  className={`relative w-full py-3 text-[12px] uppercase tracking-[0.18em] font-medium transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
-                    ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
-                  {g.label}
-                  {g.subcategories.length > 0 && (
-                    <svg className={`w-2 h-2 transition-all duration-200 ${openDropdown === g.id ? 'opacity-80 rotate-180' : 'opacity-40'}`} viewBox="0 0 10 6" fill="none">
-                      <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
+                  className={`w-full flex items-center justify-between px-5 py-4 text-[12px] uppercase tracking-[0.18em] font-medium transition-colors
+                    ${activeGroup === g.id ? 'text-white bg-neutral-900/60' : 'text-neutral-500'}`}
+                >
+                  <span>{g.label}</span>
+                  <div className="flex items-center gap-2">
+                    {activeGroup === g.id && activeSub && (
+                      <span className="text-[10px] text-neutral-500 normal-case tracking-normal">
+                        {g.subcategories.find(s => s.id === activeSub)?.label}
+                      </span>
+                    )}
+                    {g.subcategories.length > 0 && (
+                      <svg
+                        className={`w-3 h-3 transition-transform duration-200 ${openDropdown === g.id ? 'rotate-180 opacity-80' : 'opacity-30'}`}
+                        viewBox="0 0 10 6" fill="none">
+                        <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
                 </button>
+
+                {/* Inline subcategory list — expands below the tab */}
                 {g.subcategories.length > 0 && openDropdown === g.id && (
-                  <div className="absolute top-full right-0 mt-1 z-50">
-                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
-                      <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
-                        className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
-                        All {g.label}
+                  <div className="bg-[#0d0d0d] border-t border-neutral-900">
+                    <button
+                      onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
+                      className={`w-full text-left px-8 py-3 text-[11px] uppercase tracking-[0.14em] font-medium transition-colors border-b border-neutral-900/50
+                        ${activeGroup === g.id && !activeSub ? 'text-white' : 'text-neutral-600 active:text-white'}`}
+                    >
+                      All {g.label}
+                    </button>
+                    {g.subcategories.map(sub => (
+                      <button
+                        key={sub.id}
+                        onClick={() => { setActiveGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
+                        className={`w-full text-left px-8 py-3 text-[11px] uppercase tracking-[0.14em] font-medium transition-colors border-b border-neutral-900/50 last:border-b-0
+                          ${activeSub === sub.id ? 'text-white bg-neutral-800/40' : 'text-neutral-600 active:text-white'}`}
+                      >
+                        {sub.label}
                       </button>
-                      {g.subcategories.map(sub => (
-                        <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
-                          className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
-                          {sub.label}
-                        </button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Row 2 on mobile (last 2 groups) */}
-          <div className="flex items-center border-t border-neutral-900 md:hidden">
-            {groups.slice(3).map(g => (
-              <div key={g.id} className="relative flex-1"
-                onMouseEnter={() => g.subcategories.length > 0 && window.matchMedia('(hover: hover)').matches && setOpenDropdown(g.id)}
-                onMouseLeave={() => window.matchMedia('(hover: hover)').matches && setOpenDropdown(null)}>
-                <button role="tab" aria-selected={activeGroup === g.id}
-                  onClick={() => {
-                    if (g.subcategories.length > 0 && !window.matchMedia('(hover: hover)').matches) {
-                      setOpenDropdown(prev => prev === g.id ? null : g.id)
-                      setActiveGroup(g.id); setActiveSub(null)
-                    } else { handleGroup(g.id) }
-                  }}
-                  className={`relative w-full py-3 text-[12px] uppercase tracking-[0.18em] font-medium transition-colors duration-200 whitespace-nowrap flex items-center justify-center gap-1
-                    ${activeGroup === g.id ? 'text-white' : 'text-neutral-600'}`}>
-                  {g.label}
-                  {g.subcategories.length > 0 && (
-                    <svg className={`w-2 h-2 transition-all duration-200 ${openDropdown === g.id ? 'opacity-80 rotate-180' : 'opacity-40'}`} viewBox="0 0 10 6" fill="none">
-                      <path d="M1 1L5 5l4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
-                </button>
-                {g.subcategories.length > 0 && openDropdown === g.id && (
-                  <div className="absolute top-full right-0 mt-1 z-50">
-                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
-                      <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
-                        className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
-                        All {g.label}
-                      </button>
-                      {g.subcategories.map(sub => (
-                        <button key={sub.id} onClick={() => { handleGroup(g.id); setActiveSub(sub.id); setOpenDropdown(null) }}
-                          className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && activeSub === sub.id ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
-                          {sub.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Single row on md+ */}
-          <div className="hidden md:flex items-center overflow-x-auto md:overflow-visible scrollbar-hide">
+          {/* ── DESKTOP: horizontal tabs with hover dropdowns ── */}
+          <div className="hidden md:flex items-center border-b border-neutral-900 overflow-x-auto scrollbar-hide">
             {groups.map(g => (
               <div key={g.id} className="relative flex-shrink-0"
                 onMouseEnter={() => g.subcategories.length > 0 && setOpenDropdown(g.id)}
@@ -481,7 +457,7 @@ export default function Portfolio({ lang = 'en' }) {
                 </button>
                 {g.subcategories.length > 0 && openDropdown === g.id && (
                   <div className="absolute top-full left-0 mt-1 z-50">
-                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[160px] shadow-2xl shadow-black/80">
+                    <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[180px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null) }}
                         className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
                         All {g.label}
