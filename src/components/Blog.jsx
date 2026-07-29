@@ -157,7 +157,10 @@ export default function Blog({ lang = 'en' }) {
                     {getRead(selected) && <><span className="label-text text-neutral-700">·</span><span className="label-text">{getRead(selected)}</span></>}
                   </div>
                   <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-medium text-white leading-snug mb-6 pr-8">{getTitle(selected)}</h2>
-                  <div className="text-neutral-400 text-sm sm:text-base leading-relaxed whitespace-pre-line border-t border-neutral-900 pt-6">{getBody(selected)}</div>
+                  <div
+                    className="text-neutral-400 text-sm sm:text-base leading-relaxed border-t border-neutral-900 pt-6 prose-content"
+                    dangerouslySetInnerHTML={{ __html: getBody(selected) }}
+                  />
                   <div className="mt-8 pt-6 border-t border-neutral-900 flex flex-wrap items-center gap-3">
                     <span className="label-text mr-2">Share</span>
                     <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2 border border-neutral-800 hover:border-neutral-600 text-neutral-400 hover:text-white text-xs font-medium tracking-wide transition-colors">

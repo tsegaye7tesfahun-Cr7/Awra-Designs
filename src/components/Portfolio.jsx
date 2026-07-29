@@ -399,7 +399,7 @@ export default function Portfolio({ lang = 'en' }) {
                   {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
                 </button>
                 {g.subcategories.length > 0 && openDropdown === g.id && (
-                  <div className="absolute top-full left-0 mt-1 z-50">
+                  <div className="absolute top-full right-0 mt-1 z-50">
                     <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
                         className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
@@ -442,7 +442,7 @@ export default function Portfolio({ lang = 'en' }) {
                   {activeGroup === g.id && <motion.span layoutId="grp-ul" className="absolute bottom-0 left-0 right-0 h-px bg-white" transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
                 </button>
                 {g.subcategories.length > 0 && openDropdown === g.id && (
-                  <div className="absolute top-full left-0 mt-1 z-50">
+                  <div className="absolute top-full right-0 mt-1 z-50">
                     <div className="bg-[#111111] border border-neutral-800 py-1 min-w-[150px] shadow-2xl shadow-black/80">
                       <button onClick={() => { handleGroup(g.id); setActiveSub(null); setOpenDropdown(null) }}
                         className={`w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors ${activeGroup === g.id && !activeSub ? 'text-white bg-neutral-800/60' : 'text-neutral-500 hover:text-white hover:bg-neutral-800/40'}`}>
