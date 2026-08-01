@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
+import { trackView, trackEvent } from '../lib/analytics'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -66,6 +67,7 @@ export default function Blog({ lang = 'en' }) {
   const [copyDone, setCopyDone] = useState(false)
 
   useEffect(() => {
+    trackView('blog')
     fetch(`${API_URL}/blog?limit=10`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => { if (d.success && Array.isArray(d.data) && d.data.length > 0) setPosts(d.data.map(toPost)) })
@@ -79,7 +81,9 @@ export default function Blog({ lang = 'en' }) {
   const getRead  = p => lang === 'am' ? (p.readTimeAm || p.readTime) : p.readTime
   const getBody  = p => lang === 'am' ? (p.fullContentAm || p.fullContent) : p.fullContent
 
-  const openPost  = post => { setScrollPos(window.scrollY); setSelected(post); document.body.style.overflow = 'hidden' }
+  const openPost  = post => {
+    trackEvent('blog_view', post.title, { postId: post.id })
+    setScrollPos(window.scrollY); setSelected(post); document.body.style.overflow = 'hidden' }
   const closePost = () => { setSelected(null); document.body.style.overflow = ''; setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80); setCopyDone(false) }
 
   useEffect(() => {

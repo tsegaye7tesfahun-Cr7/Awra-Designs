@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
+import { trackView } from '../lib/analytics'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -84,6 +85,7 @@ function ProjectSlideshow({ covers }) {
 export default function About({ lang = 'en' }) {
   const tx = t[lang].about
   const [teamMembers, setTeamMembers] = useState(FALLBACK_TEAM)
+  useEffect(() => { trackView('about') }, [])
   const [covers, setCovers] = useState(FALLBACK_COVERS)
 
   useEffect(() => {

@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { submitContact } from '../lib/api'
+import { trackView, trackEvent } from '../lib/analytics'
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim())
 
@@ -60,6 +61,8 @@ const WaIcon = () => (
 export default function Contact({ lang = 'en' }) {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
   const t = copy[lang]
+
+  useEffect(() => { trackView('contact') }, [])
 
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [errors, setErrors]     = useState({ name: '', email: '', message: '' })
@@ -125,6 +128,7 @@ export default function Contact({ lang = 'en' }) {
         subject: 'Contact Form',
       })
       setSubmitStatus('success')
+      trackEvent('contact_form', null, { name: formData.name.trim() })
       setFormData({ name: '', email: '', message: '' })
       setErrors({ name: '', email: '', message: '' })
       setTouched({ name: false, email: false, message: false })

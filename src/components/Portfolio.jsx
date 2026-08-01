@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
+import { trackView, trackEvent } from '../lib/analytics'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -272,6 +273,7 @@ export default function Portfolio({ lang = 'en' }) {
   const tx = t[lang].portfolio
 
   useEffect(() => {
+    trackView('projects')
     // Fetch projects
     fetch(`${API_URL}/projects`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
@@ -295,10 +297,8 @@ export default function Portfolio({ lang = 'en' }) {
                   : [],
             }
           })
-          // Merge: keep static projects whose IDs aren't returned by the API
-          const apiIds = new Set(apiProjects.map(p => p.id))
-          const staticOnly = PROJECTS.filter(p => !apiIds.has(p.id))
-          setProjects([...apiProjects, ...staticOnly])
+          // API returned data — use it exclusively, no static fallback
+          setProjects(apiProjects)
         }
       })
       .catch(() => {})
@@ -315,6 +315,7 @@ export default function Portfolio({ lang = 'en' }) {
   }, [])
 
   const openModal  = item => {
+    trackEvent('project_view', item.title, { projectId: item.id })
     setScrollPos(window.scrollY)
     setSelected(item)
     document.body.style.overflow = 'hidden'
