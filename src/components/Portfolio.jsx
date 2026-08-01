@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import { trackView, trackEvent } from '../lib/analytics'
+import { FloorPlanFragment, SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -356,7 +357,10 @@ export default function Portfolio({ lang = 'en' }) {
   const total      = (showFeat ? 1 : 0) + grid.length
 
   return (
-    <section id="works" ref={ref} className="bg-[#0a0a0a]">
+    <section id="works" ref={ref} className="bg-[#0a0a0a] relative overflow-hidden">
+      {/* Floor plan fragment — bottom right, very faint */}
+      <FloorPlanFragment opacity={0.025} className="w-80 h-60 bottom-16 right-0 hidden lg:block" />
+      <SheetRef code="A-101" title="WORKS" />
 
       <div className="container-custom pt-4 md:pt-6 lg:pt-8 pb-0">
         {/* Heading */}

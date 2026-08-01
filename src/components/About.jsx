@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import { trackView } from '../lib/analytics'
+import { SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -122,7 +123,8 @@ export default function About({ lang = 'en' }) {
   const getRole = m => lang === 'am' ? (m.roleAm || m.role) : m.role
 
   return (
-    <section id="about" className="bg-[#0a0a0a]">
+    <section id="about" className="bg-[#0a0a0a] relative overflow-hidden">
+      <SheetRef code="A-201" title="ABOUT" />
       <hr className="border-0 border-t border-neutral-800" />
 
       <div className="section-padding">

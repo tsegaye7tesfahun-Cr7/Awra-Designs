@@ -99,3 +99,12 @@
 .prose-content pre code { background: none; border: none; padding: 0; }
 .prose-content hr { border: none; border-top: 1px solid #262626; margin: 2em 0; }
 .prose-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 1.5em 0; }
+
+/* ── Native select — dark background for all platforms ──────────────────── */
+select option {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+select option:disabled {
+  color: #555555;
+}

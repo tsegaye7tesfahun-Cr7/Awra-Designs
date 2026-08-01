@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import { SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -40,7 +41,8 @@ export default function Testimonials() {
   }, [inView, paused, testimonials.length])
 
   return (
-    <section ref={ref} className="section-padding bg-[#0d0d0d] border-t border-neutral-900" id="testimonials">
+    <section ref={ref} className="section-padding bg-[#0d0d0d] border-t border-neutral-900 relative" id="testimonials">
+      <SheetRef code="A-301" title="TESTIMONIALS" />
       <div className="container-custom">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }} className="mb-10 md:mb-14">
           <p className="label-text mb-3">Client Voices</p>

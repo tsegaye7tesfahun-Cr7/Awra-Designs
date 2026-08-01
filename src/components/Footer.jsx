@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { AnimatePresence } from 'framer-motion'
 import t from '../utils/translations'
+import { BlueprintGrid, SheetRef } from './ArchDetails'
 
 const socials = [
   {
@@ -47,7 +48,8 @@ export default function Footer({ lang = 'en' }) {
   const tx = t[lang].footer
 
   return (
-    <footer ref={ref} className="bg-[#0a0a0a]">
+    <footer ref={ref} className="bg-[#0a0a0a] relative overflow-hidden">
+      <BlueprintGrid opacity={0.025} gridSize={80} />
       <hr className="border-0 border-t border-neutral-800" />
       <motion.div
         className="container-custom"

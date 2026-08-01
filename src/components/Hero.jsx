@@ -3,14 +3,31 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import QuoteModal from './QuoteModal'
+import PermitCalculator from './PermitCalculator'
 import { trackView } from '../lib/analytics'
+import { BlueprintGrid, SheetRef } from './ArchDetails'
 
 const Hero = ({ lang = 'en' }) => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
   const tx = t[lang].hero
-  const [quoteOpen, setQuoteOpen] = useState(false)
+  const [quoteOpen,      setQuoteOpen]      = useState(false)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   useEffect(() => { trackView('hero') }, [])
+
+  // Close calculator on ESC
+  useEffect(() => {
+    if (!calculatorOpen) return
+    const fn = (e) => { if (e.key === 'Escape') setCalculatorOpen(false) }
+    document.addEventListener('keydown', fn)
+    return () => document.removeEventListener('keydown', fn)
+  }, [calculatorOpen])
+
+  // Lock body scroll when open
+  useEffect(() => {
+    document.body.style.overflow = calculatorOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [calculatorOpen])
 
   return (
     <>
@@ -28,11 +45,17 @@ const Hero = ({ lang = 'en' }) => {
           }}
         />
 
+        {/* Blueprint grid overlay */}
+        <BlueprintGrid opacity={0.03} gridSize={80} />
+
         {/* Top accent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
 
-        {/* Glow accent — bottom right */}
+        {/* Glow accent */}
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-white/[0.02] blur-3xl pointer-events-none" />
+
+        {/* Drawing reference annotations */}
+        <SheetRef code="A-001" title="HOME" />
 
         <div className="relative z-10 container-custom py-24 md:py-36 lg:py-44">
           <div className="max-w-4xl">
@@ -64,21 +87,15 @@ const Hero = ({ lang = 'en' }) => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Line 1 — large white */}
                 <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] text-white">
                   {tx.headline1}
                 </span>
-                {/* Line 2 — outlined / ghost text for contrast */}
                 <span
                   className="block text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] mt-1"
-                  style={{
-                    WebkitTextStroke: '1px rgba(255,255,255,0.25)',
-                    color: 'transparent',
-                  }}
+                  style={{ WebkitTextStroke: '1px rgba(255,255,255,0.25)', color: 'transparent' }}
                 >
                   {tx.headline2}
                 </span>
-                {/* Line 3 — cream accent, slightly smaller */}
                 <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] text-cream mt-2">
                   {tx.headline3}
                 </span>
@@ -97,7 +114,7 @@ const Hero = ({ lang = 'en' }) => {
               <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-neutral-700 to-transparent" />
             </motion.div>
 
-            {/* Proof / subline */}
+            {/* Proof */}
             <motion.p
               className="text-neutral-500 text-sm sm:text-base leading-relaxed max-w-sm mb-10"
               initial={{ opacity: 0 }}
@@ -111,7 +128,7 @@ const Hero = ({ lang = 'en' }) => {
               </AnimatePresence>
             </motion.p>
 
-            {/* CTAs */}
+            {/* CTAs — Request a Quote + Calculate Permit Fee (replaces WhatsApp) */}
             <motion.div
               className="flex flex-row flex-wrap gap-3"
               initial={{ opacity: 0, y: 16 }}
@@ -130,18 +147,14 @@ const Hero = ({ lang = 'en' }) => {
                 <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
               </button>
 
-              <a
-                href="https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27d%20like%20to%20discuss%20a%20project."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
+              {/* Permit calculator trigger — replaces WhatsApp button */}
+              <button
+                onClick={() => setCalculatorOpen(true)}
+                className="group inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
               >
-                <AnimatePresence mode="wait">
-                  <motion.span key={lang} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                    {tx.whatsapp}
-                  </motion.span>
-                </AnimatePresence>
-              </a>
+                Calculate Permit Fee
+                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </button>
             </motion.div>
 
           </div>
@@ -151,7 +164,54 @@ const Hero = ({ lang = 'en' }) => {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
       </section>
 
+      {/* Quote modal */}
       <QuoteModal isOpen={quoteOpen} onClose={() => setQuoteOpen(false)} lang={lang} />
+
+      {/* Permit Calculator drawer */}
+      <AnimatePresence>
+        {calculatorOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setCalculatorOpen(false)}
+            />
+
+            {/* Drawer — slides up from bottom */}
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 z-50 bg-[#0f0f0f] border-t border-neutral-800 overflow-y-auto"
+              style={{ maxHeight: '92vh' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-neutral-700 rounded-full" />
+              </div>
+
+              {/* Close button */}
+              <button
+                onClick={() => setCalculatorOpen(false)}
+                className="absolute top-4 right-5 text-neutral-500 hover:text-white transition-colors"
+                aria-label="Close calculator"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
+                  <path d="M12 4L4 12M4 4l8 8"/>
+                </svg>
+              </button>
+
+              {/* Calculator content — rendered inline, no separate section */}
+              <PermitCalculator inline onConsultationRequest={() => setCalculatorOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import { trackView, trackEvent } from '../lib/analytics'
+import { SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -98,7 +99,8 @@ export default function Blog({ lang = 'en' }) {
   }
 
   return (
-    <section id="blog" ref={ref} className="bg-[#0a0a0a]">
+    <section id="blog" ref={ref} className="bg-[#0a0a0a] relative">
+      <SheetRef code="A-401" title="INSIGHTS" />
       <hr className="border-0 border-t border-neutral-800" />
       <div className="section-padding">
         <div className="container-custom">

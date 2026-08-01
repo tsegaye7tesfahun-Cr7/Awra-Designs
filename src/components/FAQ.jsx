@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import { SheetRef } from './ArchDetails'
 
 // Static fallback — shown while API loads or if API fails
 const FALLBACK_FAQS = [
@@ -123,7 +124,8 @@ export default function FAQ({ lang = 'en' }) {
   const tx = labels[lang] || labels.en
 
   return (
-    <section id="faq" ref={ref} className="bg-[#0a0a0a] border-t border-neutral-900">
+    <section id="faq" ref={ref} className="bg-[#0a0a0a] border-t border-neutral-900 relative">
+      <SheetRef code="A-501" title="FAQ" />
       <div className="section-padding">
         <div className="container-custom">
 

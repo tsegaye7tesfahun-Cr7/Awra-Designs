@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { submitContact } from '../lib/api'
 import { trackView, trackEvent } from '../lib/analytics'
+import { SheetRef } from './ArchDetails'
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim())
 
@@ -69,6 +70,36 @@ export default function Contact({ lang = 'en' }) {
   const [touched, setTouched]   = useState({ name: false, email: false, message: false })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
+  const [permitBanner, setPermitBanner] = useState(null) // permit prefill banner
+
+  // Listen for prefill-contact event from PermitCalculator
+  // Also check sessionStorage in case Contact was not yet mounted when event fired
+  useEffect(() => {
+    const applyPrefill = ({ message, permitData }) => {
+      if (message) {
+        setFormData(prev => ({ ...prev, message }))
+        setTouched(prev => ({ ...prev, message: true }))
+      }
+      if (permitData) setPermitBanner(permitData)
+    }
+
+    // Check sessionStorage first (handles lazy-load case)
+    const stored = sessionStorage.getItem('_permit_prefill')
+    if (stored) {
+      try {
+        applyPrefill(JSON.parse(stored))
+        sessionStorage.removeItem('_permit_prefill')
+      } catch {}
+    }
+
+    // Also listen for real-time event
+    const handler = (e) => {
+      applyPrefill(e.detail || {})
+      sessionStorage.removeItem('_permit_prefill')
+    }
+    window.addEventListener('prefill-contact', handler)
+    return () => window.removeEventListener('prefill-contact', handler)
+  }, [])
 
   const validateField = (name, value) => {
     if (name === 'name') {
@@ -153,7 +184,8 @@ export default function Contact({ lang = 'en' }) {
     }`
 
   return (
-    <section id="contact" ref={ref} className="bg-[#0a0a0a]">
+    <section id="contact" ref={ref} className="bg-[#0a0a0a] relative">
+      <SheetRef code="A-601" title="CONTACT" />
       <hr className="border-0 border-t border-neutral-800" />
 
       {/* ── MOBILE ── */}
@@ -205,6 +237,11 @@ export default function Contact({ lang = 'en' }) {
           </div>
 
           {/* Compact form */}
+          {permitBanner && (
+            <div className="mb-4 px-4 py-3 border border-white/10 bg-white/5 text-xs text-neutral-400 leading-relaxed">
+              Your estimated permit fee has been attached to your consultation request.
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <div>
               <input type="text" name="name" value={formData.name}
@@ -298,6 +335,11 @@ export default function Contact({ lang = 'en' }) {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.15 }}
             >
+              {permitBanner && (
+                <div className="mb-6 px-4 py-3 border border-white/10 bg-white/5 text-xs text-neutral-400 leading-relaxed">
+                  Your estimated permit fee has been attached to your consultation request.
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-7" noValidate>
                 <div className="grid grid-cols-2 gap-7">
                   <div>
