@@ -5,6 +5,114 @@ import t from '../utils/translations'
 import { trackView } from '../lib/analytics'
 import { SheetRef } from './ArchDetails'
 
+function useCounter(target, inView, duration = 1800) {
+  const [count, setCount] = useState(0)
+  const started = useRef(false)
+  useEffect(() => {
+    if (!inView || started.current) return
+    started.current = true
+    const start = performance.now()
+    const tick = (now) => {
+      const p = Math.min((now - start) / duration, 1)
+      const ease = 1 - Math.pow(1 - p, 3)
+      setCount(Math.round(target * ease))
+      if (p < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [inView, target, duration])
+  return count
+}
+
+function StatCard({ stat, inView, delay }) {
+  const [active, setActive] = useState(false)
+  const count = useCounter(stat.value, active)
+  useEffect(() => {
+    if (!inView) return
+    const t = setTimeout(() => setActive(true), delay)
+    return () => clearTimeout(t)
+  }, [inView, delay])
+
+  return (
+    <div className="bg-[#0a0a0a] px-6 py-8">
+      <div className="font-display text-3xl sm:text-4xl font-medium text-white tabular-nums">
+        {count}{stat.suffix}
+      </div>
+      <p className="label-text mt-2 text-neutral-600 leading-snug">{stat.label}</p>
+    </div>
+  )
+}
+
+function StatsSection() {
+  const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const stats = [
+    { label: 'Completed Projects',  value: 120, suffix: '+' },
+    { label: 'Residential Designs', value: 80,  suffix: '+' },
+    { label: 'Commercial Projects', value: 40,  suffix: '+' },
+    { label: 'Building Permits',    value: 200, suffix: '+' },
+    { label: 'Years of Experience', value: 7,   suffix: '' },
+    { label: 'Satisfied Clients',   value: 100, suffix: '+' },
+  ]
+  return (
+    <div ref={ref}>
+      <FadeIn className="mb-10 md:mb-14">
+        <p className="label-text mb-3">By the Numbers</p>
+        <h3 className="font-display text-2xl sm:text-3xl font-medium text-white">Impact & Scale</h3>
+      </FadeIn>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-neutral-900">
+        {stats.map((stat, i) => (
+          <StatCard key={stat.label} stat={stat} inView={inView} delay={i * 120} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DesignProcessSection() {
+  const { ref, inView } = useInView({ threshold: 0.15, triggerOnce: true })
+  const steps = [
+    { code: '01', title: 'Discovery',              desc: 'Site analysis, brief development, and client consultation.' },
+    { code: '02', title: 'Concept Sketch',          desc: 'Initial spatial ideas, massing studies, and mood direction.' },
+    { code: '03', title: 'Planning',                desc: 'Detailed floor plans, section drawings, and permit documentation.' },
+    { code: '04', title: '3D Visualization',        desc: 'Photorealistic renders and walkthroughs for approval.' },
+    { code: '05', title: 'Permit Documentation',    desc: 'Full drawing sets prepared to Addis Ababa Building Authority standards.' },
+    { code: '06', title: 'Construction Support',    desc: 'Site supervision and contractor coordination through completion.' },
+  ]
+
+  return (
+    <div ref={ref}>
+      <FadeIn className="mb-12 md:mb-16">
+        <p className="label-text mb-3">Methodology</p>
+        <h3 className="font-display text-2xl sm:text-3xl font-medium text-white">Design Process</h3>
+      </FadeIn>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-900">
+        {steps.map((step, i) => (
+          <motion.div
+            key={step.code}
+            className="bg-[#0a0a0a] p-6 md:p-8 group"
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Animated connector line */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="label-text text-neutral-700">{step.code}</span>
+              <motion.div
+                className="flex-1 h-px bg-neutral-800"
+                initial={{ scaleX: 0 }}
+                animate={inView ? { scaleX: 1 } : {}}
+                style={{ originX: 0 }}
+                transition={{ duration: 0.8, delay: i * 0.1 + 0.2 }}
+              />
+            </div>
+            <h4 className="text-sm font-medium text-white mb-2">{step.title}</h4>
+            <p className="text-xs text-neutral-600 leading-relaxed">{step.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const SITE_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
 function resolveImg(url) {
@@ -208,6 +316,18 @@ export default function About({ lang = 'en' }) {
               </FadeIn>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="section-padding border-t border-neutral-800">
+        <div className="container-custom">
+          <StatsSection />
+        </div>
+      </div>
+
+      <div className="section-padding border-t border-neutral-800">
+        <div className="container-custom">
+          <DesignProcessSection />
         </div>
       </div>
     </section>

@@ -296,7 +296,7 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                   onClick={handleConsultation}
                   className="inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-700 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
                 >
-                  Request Consultation
+                  Request Consultation With This Estimate
                 </button>
               )}
 
@@ -360,8 +360,29 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                     </div>
                   </div>
 
-                  {/* Note */}
-                  <p className="mt-6 text-neutral-600 text-[11px] leading-relaxed border-t border-white/5 pt-4">
+                  {/* Reference info */}
+                  <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="label-text text-neutral-600">Reference Code</span>
+                      <span className="label-text text-neutral-400 font-mono">
+                        {buildingType.slice(0,3).toUpperCase()}-{String(Math.ceil(parseFloat(floorArea || 0) / 100) * 100).padStart(4,'0')}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="label-text text-neutral-600">Processing Category</span>
+                      <span className="label-text text-neutral-400">
+                        {parseFloat(floorArea || 0) <= 200 ? 'Standard' : parseFloat(floorArea || 0) <= 500 ? 'Medium' : 'Complex'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="label-text text-neutral-600">Est. Processing Time</span>
+                      <span className="label-text text-neutral-400">
+                        {parseFloat(floorArea || 0) <= 200 ? '4–6 weeks' : parseFloat(floorArea || 0) <= 500 ? '6–10 weeks' : '10–16 weeks'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-neutral-600 text-[11px] leading-relaxed border-t border-white/5 pt-4">
                     Need a complete design and permit package? AWRA Designs can handle the entire process from concept to approval.
                   </p>
                 </motion.div>

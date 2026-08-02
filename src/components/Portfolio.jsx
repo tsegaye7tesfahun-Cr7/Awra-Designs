@@ -5,6 +5,38 @@ import t from '../utils/translations'
 import { trackView, trackEvent } from '../lib/analytics'
 import { FloorPlanFragment, SheetRef } from './ArchDetails'
 
+function getProjectId(index) {
+  return `AW-${String(index + 1).padStart(3, '0')}`
+}
+
+function PortfolioCursor({ visible }) {
+  const [pos, setPos] = useState({ x: -100, y: -100 })
+
+  useEffect(() => {
+    const move = e => setPos({ x: e.clientX, y: e.clientY })
+    window.addEventListener('mousemove', move, { passive: true })
+    return () => window.removeEventListener('mousemove', move)
+  }, [])
+
+  return (
+    <div
+      className="fixed z-[9998] pointer-events-none select-none hidden md:flex items-center justify-center"
+      style={{
+        left: pos.x, top: pos.y,
+        width: 52, height: 52,
+        transform: 'translate(-50%, -50%)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.2s',
+      }}
+      aria-hidden
+    >
+      <div className="w-full h-full rounded-full border border-white/40 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+        <span className="text-[9px] uppercase tracking-[0.2em] text-white font-medium">VIEW</span>
+      </div>
+    </div>
+  )
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const GROUPS = [
@@ -61,10 +93,11 @@ function getGroupCats(groupId, groups) {
   return groups.find(g => g.id === groupId)?.subcategories.map(s => s.id) || []
 }
 
-function FadeIn({ children, delay = 0, className = '' }) {
+function FadeIn({ children, delay = 0, className = '', onMouseEnter, onMouseLeave }) {
   const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: true })
   return (
     <motion.div ref={ref} className={className}
+      onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
       initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}>
       {children}
@@ -126,6 +159,7 @@ export default function Portfolio({ lang = 'en' }) {
   const [projects, setProjects] = useState([])
   const [groups, setGroups] = useState(GROUPS)
   const [waNumber, setWaNumber] = useState('251923814125')
+  const [cursorVisible, setCursorVisible] = useState(false)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
 
@@ -355,6 +389,22 @@ export default function Portfolio({ lang = 'en' }) {
                 <div>
                   <p className="label-text text-neutral-400 mb-1">{featured.category} — {featured.year}</p>
                   <h3 className="font-display text-2xl md:text-4xl lg:text-5xl font-medium text-white">{featured.title}</h3>
+                  {/* Metadata chips — visible on hover */}
+                  <div className="hidden sm:flex items-center gap-4 mt-3 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    {featured.type && (
+                      <div className="border border-white/20 px-2.5 py-1">
+                        <span className="label-text text-neutral-300">{featured.type}</span>
+                      </div>
+                    )}
+                    {featured.client && (
+                      <div className="border border-white/20 px-2.5 py-1">
+                        <span className="label-text text-neutral-300">{featured.client}</span>
+                      </div>
+                    )}
+                    <div className="border border-white/20 px-2.5 py-1">
+                      <span className="label-text text-neutral-300">AW-001</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="hidden sm:flex flex-col items-end gap-1">
                   <span className="label-text text-neutral-400">{tx.open}</span>
@@ -372,7 +422,8 @@ export default function Portfolio({ lang = 'en' }) {
           exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px lg:gap-4 xl:gap-6 bg-neutral-900 lg:bg-transparent mt-px">
           {grid.map((item, idx) => (
-            <FadeIn key={item.id} delay={idx * 0.03} className="bg-[#0a0a0a] group cursor-pointer overflow-hidden">
+            <FadeIn key={item.id} delay={idx * 0.03} className="bg-[#0a0a0a] group cursor-pointer overflow-hidden"
+              onMouseEnter={() => setCursorVisible(true)} onMouseLeave={() => setCursorVisible(false)}>
               <div onClick={() => openModal(item)} className="relative overflow-hidden aspect-[16/9]">
                 <img src={item.images[0]} alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-[1s] group-hover:scale-[1.04]"
@@ -395,6 +446,10 @@ export default function Portfolio({ lang = 'en' }) {
                       {tx.open.replace(' →', '')} →
                     </button>
                   </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="label-text text-neutral-600">{getProjectId(idx)}</span>
+                  {item.type && <><span className="label-text text-neutral-800">·</span><span className="label-text text-neutral-600 truncate">{item.type}</span></>}
                 </div>
               </div>
             </FadeIn>
@@ -426,14 +481,65 @@ export default function Portfolio({ lang = 'en' }) {
                 </button>
                 <ImageGallery images={selected.images} title={selected.title} />
                 <div className="p-6 sm:p-8 md:p-10">
-                  <div className="flex flex-wrap gap-x-8 gap-y-2 mb-6">
-                    {[{label: tx.type, value: selected.type}, {label: tx.year, value: selected.year}, {label: tx.category, value: selected.category}].map(m => (
-                      <div key={m.label}><p className="label-text mb-1">{m.label}</p><p className="text-xs text-white">{m.value}</p></div>
+                  {/* Project ID + status row */}
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="label-text text-neutral-600">{getProjectId(projects.indexOf(selected))}</span>
+                    <span className="label-text text-green-600 border border-green-900/60 px-2 py-0.5">Completed</span>
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="font-display text-2xl sm:text-3xl font-medium text-white mb-6">{selected.title}</h2>
+
+                  {/* Metadata grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 mb-6 pb-6 border-b border-neutral-900">
+                    {[
+                      { label: tx.type,      value: selected.type },
+                      { label: tx.year,      value: selected.year },
+                      { label: tx.category,  value: selected.category },
+                      { label: 'Client',     value: selected.client || '—' },
+                      { label: 'Project ID', value: getProjectId(projects.indexOf(selected)) },
+                      { label: 'Status',     value: 'Completed' },
+                    ].map(m => m.value && (
+                      <div key={m.label}>
+                        <p className="label-text mb-1 text-neutral-600">{m.label}</p>
+                        <p className="text-xs text-white">{m.value}</p>
+                      </div>
                     ))}
                   </div>
-                  <h2 className="font-display text-2xl sm:text-3xl font-medium text-white mb-4">{selected.title}</h2>
-                  <p className="text-neutral-500 leading-relaxed text-sm max-w-xl">{selected.description}</p>
-                  <div className="flex flex-wrap gap-0 mt-8 pt-6 border-t border-neutral-900">
+
+                  {/* Description */}
+                  <p className="text-neutral-500 leading-relaxed text-sm mb-6">{selected.description}</p>
+
+                  {/* Services */}
+                  {selected.services?.length > 0 && (
+                    <div className="mb-6 pb-6 border-b border-neutral-900">
+                      <p className="label-text mb-3 text-neutral-600">Services</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selected.services.map((s, i) => (
+                          <span key={i} className="label-text border border-neutral-800 px-2.5 py-1 text-neutral-400">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Design Timeline */}
+                  <div className="mb-6 pb-6 border-b border-neutral-900">
+                    <p className="label-text mb-4 text-neutral-600">Design Process</p>
+                    <div className="flex items-center gap-0">
+                      {['Concept', 'Planning', 'Design', 'Viz', 'Delivery'].map((step, i, arr) => (
+                        <span key={step} className="contents">
+                          <div className="flex flex-col items-center flex-shrink-0">
+                            <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                            <p className="text-[9px] uppercase tracking-[0.08em] text-neutral-600 mt-1.5 whitespace-nowrap">{step}</p>
+                          </div>
+                          {i < arr.length - 1 && <div className="flex-1 h-px bg-neutral-800 -mt-3" />}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap gap-0">
                     <a href={`https://wa.me/${waNumber}?text=Hello%20Awra%20Designs%2C%20I%27m%20interested%20in%20a%20project%20similar%20to%20your%20${encodeURIComponent(selected.title)}.`}
                       target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-2 px-5 py-3 label-text border border-neutral-800 text-neutral-400 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap">
@@ -450,6 +556,7 @@ export default function Portfolio({ lang = 'en' }) {
           </motion.div>
         )}
       </AnimatePresence>
+      <PortfolioCursor visible={cursorVisible} />
     </section>
   )
 }
