@@ -23,8 +23,8 @@ const FALLBACK_POSTS = [
     title: 'Top Interior Design Trends for 2026', titleAm: 'ለ2026 ምርጥ ኢንቴሪየር ዲዛይን ትሬንዶች',
     description: 'Sustainable materials, biophilic design, and smart integration — the ideas shaping interiors this year.',
     descriptionAm: 'ዘላቂ ቁሳቁሶች፣ ባዮፊሊክ ዲዛይን እና ዘመናዊ ቴክኖሎጂ — ዘንድሮ ኢንቴሪየሮችን የሚቀርጹ ሃሳቦች።',
-    fullContent: `As we move through 2026, interior design is embracing new philosophies that prioritise sustainability, functionality, and personal well-being.\n\nSustainable materials are taking centre stage. Biophilic design remains strong. Colour palettes are shifting towards earthy tones and warm neutrals. The desire for craftsmanship is growing.`,
-    fullContentAm: `በ2026 ኢንቴሪየር ዲዛይን ዘላቂነት፣ ተግባራዊነት እና ደህንነትን ቅደም ተከተል ወደሚሰጥ አቅጣጫ እየሄደ ነው።`,
+    fullContent: '<p>As we move through 2026, interior design is embracing new philosophies that prioritise sustainability, functionality, and personal well-being.</p><p>Sustainable materials are taking centre stage. Biophilic design remains strong. Colour palettes are shifting towards earthy tones and warm neutrals. The desire for craftsmanship is growing.</p>',
+    fullContentAm: '<p>በ2026 ኢንቴሪየር ዲዛይን ዘላቂነት፣ ተግባራዊነት እና ደህንነትን ቅደም ተከተል ወደሚሰጥ አቅጣጫ እየሄደ ነው።</p>',
   },
   {
     id: 2, image: '/images/Blog/Blog 2.jpg',
@@ -33,8 +33,8 @@ const FALLBACK_POSTS = [
     title: 'Architectural Planning in Ethiopia: A Practical Guide', titleAm: 'በኢትዮጵያ የአርክቴክቸር ዕቅድ — ተግባራዊ መመሪያ',
     description: 'Navigating permits, zoning, and local building codes for your next project in Addis Ababa.',
     descriptionAm: 'ለሚቀጥለው ፕሮጀክትዎ በአዲስ አበባ ፈቃዶችን፣ ዞኒንግን፣ እና የግንባታ ደንቦችን ለማለፍ።',
-    fullContent: `Architectural planning in Ethiopia requires careful navigation of local regulations, cultural considerations, and environmental factors.\n\nBefore beginning any project, you will need permits from relevant authorities. The approval timeline typically runs four to eight weeks for standard projects.`,
-    fullContentAm: `በኢትዮጵያ የአርክቴክቸር ዕቅድ ውጤታማ ለመሆን የአካባቢ ደንቦችን ማወቅ ያስፈልጋል።`,
+    fullContent: '<p>Architectural planning in Ethiopia requires careful navigation of local regulations, cultural considerations, and environmental factors.</p><p>Before beginning any project, you will need permits from relevant authorities. The approval timeline typically runs four to eight weeks for standard projects.</p>',
+    fullContentAm: '<p>በኢትዮጵያ የአርክቴክቸር ዕቅድ ውጤታማ ለመሆን የአካባቢ ደንቦችን ማወቅ ያስፈልጋል።</p>',
   },
   {
     id: 3, image: '/images/Blog/Blog 3.jpg',
@@ -43,16 +43,32 @@ const FALLBACK_POSTS = [
     title: 'How Colour Shapes the Spaces We Live In', titleAm: 'ቀለም የምንኖርባቸውን ቦታዎች እንዴት ይቀርጻል',
     description: 'The psychology behind colour choices — and how to use them intentionally in your home or office.',
     descriptionAm: 'ከቀለም ምርጫ ጀርባ ያለው ሳይኮሎጂ — እና ቤትዎ ወይም ቢሮዎ ውስጥ ሆን ብለው ለመጠቀም።',
-    fullContent: `Colour psychology is one of the quieter tools in interior design.\n\nBlue promotes calm — ideal for bedrooms. Yellow brings energy — suited to kitchens. The most important principle is consistency.`,
-    fullContentAm: `የቀለም ሳይኮሎጂ ኢንቴሪየር ዲዛይን ውስጥ ዝምብሎ ሆኖ ከፍተኛ ተፅዕኖ ያሳድራሉ።`,
+    fullContent: '<p>Colour psychology is one of the quieter tools in interior design.</p><p>Blue promotes calm — ideal for bedrooms. Yellow brings energy — suited to kitchens. The most important principle is consistency.</p>',
+    fullContentAm: '<p>የቀለም ሳይኮሎጂ ኢንቴሪየር ዲዛይን ውስጥ ዝምብሎ ሆኖ ከፍተኛ ተፅዕኖ ያሳድራሉ።</p>',
   },
 ]
 
 function toPost(p) {
+  // If content looks like plain text (no HTML tags), convert newlines to <p> paragraphs
+  const rawContent = p.content || ''
+  const isHtml = /<[a-z][\s\S]*>/i.test(rawContent)
+  const fullContent = isHtml
+    ? rawContent
+    : rawContent
+        .split(/\n\n+/)
+        .map(para => para.trim())
+        .filter(Boolean)
+        .map(para => `<p>${para.replace(/\n/g, '<br/>')}</p>`)
+        .join('')
+
   return {
     id: p.id, image: resolveImg(p.coverImage) || '/images/Blog/Blog 1.jpg',
-    category: p.category, date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
-    readTime: p.readTime || '', title: p.title, description: p.excerpt || '', fullContent: p.content || '',
+    category: p.category,
+    date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+    readTime: p.readTime || '',
+    title: p.title,
+    description: p.excerpt || '',
+    fullContent,
   }
 }
 
@@ -91,14 +107,32 @@ export default function Blog({ lang = 'en' }) {
 
   const openPost  = post => {
     trackEvent('blog_view', post.title, { postId: post.id })
-    setScrollPos(window.scrollY); setSelected(post); document.body.style.overflow = 'hidden' }
-  const closePost = () => { setSelected(null); document.body.style.overflow = ''; setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80); setCopyDone(false) }
+    setScrollPos(window.scrollY)
+    setSelected(post)
+    document.body.style.overflow = 'hidden'
+    // Push a history entry so the browser back button closes the modal
+    history.pushState({ modal: true }, '')
+  }
+  const closePost = () => {
+    setSelected(null)
+    document.body.style.overflow = ''
+    setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80)
+    setCopyDone(false)
+  }
 
+  // ESC key
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape' && selected) closePost() }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [selected])
+  }, [selected, scrollPos])
+
+  // Mobile/tablet back button — fires when history entry is popped
+  useEffect(() => {
+    const onPop = () => { if (selected) closePost() }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [selected, scrollPos])
 
   const shareUrl = () => `${window.location.origin}${window.location.pathname}#blog-${selected?.id ?? ''}`
   const handleCopy = () => {
