@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
+import useSettings from '../lib/useSettings'
 
 const SCROLL_THROTTLE_MS = 120
 
@@ -39,6 +40,10 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
   }
 
   const tx = t[lang].nav
+
+  const settings    = useSettings()
+  const disciplines = settings.disciplines || tx.discipline
+  const heroLabel   = settings.hero_label  || tx.label
 
   // Desktop: all links including Testimonials, Blog, and FAQ
   const desktopLinks = [
@@ -121,7 +126,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
               fetchpriority="high"
             />
             <span className="hidden md:block label-text text-[9px] tracking-[0.25em] text-neutral-600">
-              {tx.discipline}
+              {disciplines}
             </span>
           </button>
 

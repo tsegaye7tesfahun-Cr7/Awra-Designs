@@ -6,6 +6,12 @@ import { trackView } from '../lib/analytics'
 import { SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const SITE_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
+function resolveImg(url) {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${SITE_ORIGIN}${url}`
+}
 
 // Fallback project cover images for the slideshow
 const FALLBACK_COVERS = [
@@ -97,7 +103,7 @@ export default function About({ lang = 'en' }) {
           setTeamMembers(d.data.teamMembers.map(m => ({
             name:   m.name,   nameAm: m.nameAm,
             role:   m.role,   roleAm: m.roleAm,
-            image:  m.imageUrl || '',
+            image:  resolveImg(m.imageUrl) || '',
           })))
         }
       })

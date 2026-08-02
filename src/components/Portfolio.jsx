@@ -7,151 +7,6 @@ import { FloorPlanFragment, SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-// ── All image paths verified against files on disk ────────────────────────────
-const PROJECTS = [
-  {
-    id: 'arch-1',
-    category: 'Architectural Layouts & Spatial Programming',
-    title: 'Architectural Layout Design',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A comprehensive architectural layout study combining spatial programming, circulation analysis, and functional zoning to create environments that work as beautifully as they look.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Architecture/Architectural Layouts & Spatial Programming/Architectural Layouts ${n}.jpg`
-    ),
-  },
-  {
-    id: 'arch-2',
-    category: 'Renovations & Transformations',
-    title: 'Complete Home Renovation',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A comprehensive renovation that completely reimagined an existing home — stripping it back to structure and rebuilding with modern materials, better light, and purposeful spaces.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Architecture/Renovations & Transformations/Renovations ${n}.jpg`
-    ),
-  },
-  {
-    id: 'arch-3',
-    category: 'Facades & Exterior 3D Designs',
-    title: 'Modern Residential Facade',
-    year: '2024', type: 'Residential', isFeatured: true,
-    description: 'A high-fidelity 3D rendering of a modern residential facade — exploring material contrast, fenestration rhythm, and the relationship between built form and landscape.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Architecture/For Facades & Outer 3D/For Facades & Outer 3D -${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-1',
-    category: 'Lounges & Family Rooms',
-    title: 'Luxury Family Lounge',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A spacious family lounge that feels both grand and deeply comfortable — layered textures, integrated lighting, and custom furniture create a space the whole family wants to live in.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Lounges & Family Rooms/Lounges & Family Rooms ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-2',
-    category: 'Master Bedrooms & Suites',
-    title: 'Master Bedroom Suite',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A master bedroom designed as a true sanctuary — custom millwork, premium finishes, integrated dressing and en-suite, all unified by a calming palette that promotes deep rest.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Master Bedrooms & Suites/Master Bedrooms ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-3',
-    category: "Kids' Bedrooms & Nurseries",
-    title: "Creative Children's Bedroom",
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: "A creative children's bedroom that sparks imagination while remaining practical — built-in storage, adaptable furniture, and a playful palette that doesn't sacrifice quality.",
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Creative Kids' Bedrooms & Nurseries/Kids Bedrooms ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-4',
-    category: 'Luxury Bathrooms & Powder Rooms',
-    title: 'Spa-Inspired Bathroom',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A luxury bathroom that channels the calm of a five-star spa — natural stone, warm-toned metals, freestanding bath, and carefully positioned lighting.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Luxury Bathrooms & Powder Rooms/Luxury Bathrooms ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-5',
-    category: 'Terraces & Verandas',
-    title: 'Terrace & Veranda Living',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'Thoughtfully designed terraces and verandas that blur the boundary between inside and out — using shade, greenery, and material continuity to create year-round outdoor living.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Terraces & Verandas/Terraces Verandas ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-6',
-    category: 'Islamic Luxury Interiors',
-    title: 'Islamic Luxury Interior',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'An interior that honours Islamic artistic heritage through geometric patterns, calligraphy-inspired details, and premium materials.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Islamic Luxury Interiors/Islamic Luxury Interiors ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-7',
-    category: 'Gym',
-    title: 'Home Gym Design',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A fully equipped home gym designed for serious training — smart layout, premium flooring, integrated storage, and lighting that keeps you focused and motivated.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Gym/Gym ${n}.jpg`
-    ),
-  },
-  {
-    id: 'res-8',
-    category: 'Steam & Sauna',
-    title: 'Steam Room & Sauna',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A private wellness retreat built into the home — natural wood, stone finishes, and custom steam and sauna installations designed for daily recovery and relaxation.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Residential Interiors/Steam & Sauna/Steam & Sauna ${n}.jpg`
-    ),
-  },
-  {
-    id: 'com-1',
-    category: 'Corporate Offices & Workspaces',
-    title: 'Modern Corporate Office',
-    year: '2024', type: 'Commercial', isFeatured: false,
-    description: 'A modern corporate office designed to reflect the company culture — open collaboration zones, quiet focus areas, executive suites, and a reception that makes a strong first impression.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Commercial Design/Corporate Offices & Workspaces/Corporate Offices ${n}.jpg`
-    ),
-  },
-  {
-    id: 'com-2',
-    category: 'Beauty Salons, Wellness & Retail',
-    title: 'Luxury Beauty Salon',
-    year: '2024', type: 'Commercial', isFeatured: false,
-    description: 'A luxury beauty salon designed to be as beautiful as the services it offers — thoughtful station layout, premium materials, flattering lighting, and a relaxing colour palette.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Commercial Design/Beauty Salons, Wellness & Retail/Beauty Salons ${n}.jpg`
-    ),
-  },
-  {
-    id: 'out-1',
-    category: 'Fences, Gates & Compound Seating',
-    title: 'Compound Gate & Seating Design',
-    year: '2024', type: 'Residential', isFeatured: false,
-    description: 'A considered design for compound boundaries, entrance gates, and integrated outdoor seating — balancing security, aesthetics, and craftsmanship in every detail.',
-    images: [1,2,3,4].map(n =>
-      `/images/Projects/Outdoor Design/Fences, Gates & Compound Seating/Fences, Gates & Compound Seating ${n}.jpg`
-    ),
-  },
-]
-
-// ── Static fallback groups (used if API is unavailable) ───────────────────────
 const GROUPS = [
   { id: 'all', label: 'All', subcategories: [] },
   {
@@ -268,14 +123,19 @@ export default function Portfolio({ lang = 'en' }) {
   const [activeGroup, setActiveGroup] = useState('all')
   const [activeSub, setActiveSub] = useState(null)
   const [openDropdown, setOpenDropdown] = useState(null)
-  const [projects, setProjects] = useState(PROJECTS)
+  const [projects, setProjects] = useState([])
   const [groups, setGroups] = useState(GROUPS)
+  const [waNumber, setWaNumber] = useState('251923814125')
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
 
   useEffect(() => {
     trackView('projects')
-    // Fetch projects
+    // Fetch settings for WhatsApp number
+    fetch(`${API_URL}/settings`, { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
+      .then(d => { if (d.success && d.data?.whatsapp_number) setWaNumber(d.data.whatsapp_number) })
+      .catch(() => {})
     fetch(`${API_URL}/projects`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
       .then(d => {
@@ -574,7 +434,7 @@ export default function Portfolio({ lang = 'en' }) {
                   <h2 className="font-display text-2xl sm:text-3xl font-medium text-white mb-4">{selected.title}</h2>
                   <p className="text-neutral-500 leading-relaxed text-sm max-w-xl">{selected.description}</p>
                   <div className="flex flex-wrap gap-0 mt-8 pt-6 border-t border-neutral-900">
-                    <a href={`https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27m%20interested%20in%20a%20project%20similar%20to%20your%20${encodeURIComponent(selected.title)}.`}
+                    <a href={`https://wa.me/${waNumber}?text=Hello%20Awra%20Designs%2C%20I%27m%20interested%20in%20a%20project%20similar%20to%20your%20${encodeURIComponent(selected.title)}.`}
                       target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-2 px-5 py-3 label-text border border-neutral-800 text-neutral-400 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap">
                       <WaIcon />{tx.whatsappModal}

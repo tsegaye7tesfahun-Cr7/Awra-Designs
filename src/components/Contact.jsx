@@ -4,23 +4,16 @@ import { useInView } from 'react-intersection-observer'
 import { submitContact } from '../lib/api'
 import { trackView, trackEvent } from '../lib/analytics'
 import { SheetRef } from './ArchDetails'
+import useSettings from '../lib/useSettings'
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || '').trim())
 
-const socials = [
-  { name: 'Instagram', href: 'https://www.instagram.com/awradesigns/' },
-  { name: 'Facebook',  href: 'https://web.facebook.com/people/Awra-Designs/100089517497042/' },
-  { name: 'Telegram',  href: 'https://t.me/AwraDesigns' },
-  { name: 'TikTok',   href: 'https://www.tiktok.com/@awrainteriors' },
-]
-
-// #8 — bilingual copy
+// bilingual copy (UI labels only — contact values come from settings)
 const copy = {
   en: {
     touch: 'Get in Touch',
     heading1: 'Start a',
     heading2: 'conversation.',
-    proof: 'Trusted by 100+ clients across Ethiopia',
     waBtn: 'Chat on WhatsApp',
     namePh: 'Name', emailPh: 'Email', msgPh: 'Tell us about your project',
     send: 'Send Message', sendShort: 'Send',
@@ -29,12 +22,15 @@ const copy = {
     sentShort: 'Sent.',
     err: 'Something went wrong. Please try again.',
     errShort: 'Failed — try again.',
+    whatsapp: 'WhatsApp',
+    phone: 'Phone',
+    email: 'Email',
+    location: 'Location',
   },
   am: {
     touch: 'ያግኙን',
     heading1: 'ስለ ፕሮጀክትዎ',
     heading2: 'ያናግሩን።',
-    proof: '100+ ደንበኞች ኢትዮጵያ ውስጥ ያምኑናል',
     waBtn: 'በ WhatsApp ያናግሩን',
     namePh: 'ስም', emailPh: 'ኢሜይል', msgPh: 'ስለ ፕሮጀክትዎ ያስረዱን',
     send: 'መልእክት ላክ', sendShort: 'ላክ',
@@ -43,15 +39,12 @@ const copy = {
     sentShort: 'ተልኳል።',
     err: 'ስህተት ተከስቷል። እንደገና ይሞክሩ።',
     errShort: 'አልተሳካም — ይሞክሩ።',
+    whatsapp: 'WhatsApp',
+    phone: 'ስልክ',
+    email: 'ኢሜይል',
+    location: 'አድራሻ',
   },
 }
-
-const contactLinks = [
-  { en: 'WhatsApp', am: 'WhatsApp', value: '+251 92 381 4125', href: 'https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27d%20like%20to%20discuss%20a%20project.', external: true },
-  { en: 'Phone',    am: 'ስልክ',      value: '+251 92 381 4125', href: 'tel:+251923814125' },
-  { en: 'Email',    am: 'ኢሜይል',     value: 'info@awradesigns.com', href: 'mailto:info@awradesigns.com' },
-  { en: 'Location', am: 'አድራሻ',     value: 'Addis Ababa, Ethiopia', href: 'https://maps.google.com/maps?q=9.021902,38.786683&ll=9.021902,38.786683&z=16', external: true },
-]
 
 const WaIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -62,6 +55,24 @@ const WaIcon = () => (
 export default function Contact({ lang = 'en' }) {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
   const t = copy[lang]
+  const settings = useSettings()
+
+  // Build contact links dynamically from settings
+  const waNumber = settings.whatsapp_number || '251923814125'
+  const waText   = encodeURIComponent("Hello Awra Designs, I'd like to discuss a project.")
+  const waHref   = `https://wa.me/${waNumber}?text=${waText}`
+  const phone    = settings.contact_phone    || '+251 92 381 4125'
+  const email    = settings.contact_email    || 'info@awradesigns.com'
+  const location = settings.contact_location || 'Addis Ababa, Ethiopia'
+  const mapsUrl  = settings.google_maps_url  || 'https://maps.google.com/maps?q=9.021902,38.786683'
+  const proofText = settings.proof_text      || '100+ spaces completed across Ethiopia'
+
+  const contactLinks = [
+    { label: t.whatsapp, value: phone, href: waHref, external: true },
+    { label: t.phone,    value: phone, href: `tel:${phone.replace(/\s/g, '')}` },
+    { label: t.email,    value: email, href: `mailto:${email}` },
+    { label: t.location, value: location, href: mapsUrl, external: true },
+  ]
 
   useEffect(() => { trackView('contact') }, [])
 
@@ -202,7 +213,7 @@ export default function Contact({ lang = 'en' }) {
 
           {/* WhatsApp primary */}
           <a
-            href="https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27d%20like%20to%20discuss%20a%20project."
+            href={waHref}
             target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-3.5 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide mb-6"
           >
@@ -220,16 +231,16 @@ export default function Contact({ lang = 'en' }) {
           <div className="space-y-0 mb-8">
             {contactLinks.map((row) => (
               row.href ? (
-                <a key={row.en} href={row.href}
+                <a key={row.label} href={row.href}
                   {...(row.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   className="flex items-center py-2.5 border-b border-neutral-900 text-sm text-neutral-400 hover:text-white transition-colors group"
                 >
-                  <span className="label-text w-24 flex-shrink-0">{lang === 'am' ? row.am : row.en}</span>
+                  <span className="label-text w-24 flex-shrink-0">{row.label}</span>
                   <span className="group-hover:underline underline-offset-4">{row.value}</span>
                 </a>
               ) : (
-                <div key={row.en} className="flex items-center py-2.5 border-b border-neutral-900 text-sm text-neutral-400">
-                  <span className="label-text w-24 flex-shrink-0">{lang === 'am' ? row.am : row.en}</span>
+                <div key={row.label} className="flex items-center py-2.5 border-b border-neutral-900 text-sm text-neutral-400">
+                  <span className="label-text w-24 flex-shrink-0">{row.label}</span>
                   <span>{row.value}</span>
                 </div>
               )
@@ -301,19 +312,19 @@ export default function Contact({ lang = 'en' }) {
 
               <p className="text-neutral-600 text-sm mb-8">
                 <AnimatePresence mode="wait">
-                  <motion.span key={t.proof}
+                  <motion.span key={proofText}
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     transition={{ duration: 0.25 }}>
-                    {t.proof}
+                    {proofText}
                   </motion.span>
                 </AnimatePresence>
               </p>
 
               <div className="space-y-5">
                 {contactLinks.map((row) => (
-                  <div key={row.en} className="flex items-start text-sm text-neutral-400">
+                  <div key={row.label} className="flex items-start text-sm text-neutral-400">
                     <span className="label-text flex-shrink-0 w-24 whitespace-nowrap">
-                      {lang === 'am' ? row.am : row.en}
+                      {row.label}
                     </span>
                     {row.href ? (
                       <a href={row.href}

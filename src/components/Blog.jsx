@@ -7,6 +7,13 @@ import { SheetRef } from './ArchDetails'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
+const SITE_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
+function resolveImg(url) {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${SITE_ORIGIN}${url}`
+}
+
 // Hardcoded fallback — images served directly from public/
 const FALLBACK_POSTS = [
   {
@@ -43,7 +50,7 @@ const FALLBACK_POSTS = [
 
 function toPost(p) {
   return {
-    id: p.id, image: p.coverImage || '/images/Blog/Blog 1.jpg',
+    id: p.id, image: resolveImg(p.coverImage) || '/images/Blog/Blog 1.jpg',
     category: p.category, date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
     readTime: p.readTime || '', title: p.title, description: p.excerpt || '', fullContent: p.content || '',
   }

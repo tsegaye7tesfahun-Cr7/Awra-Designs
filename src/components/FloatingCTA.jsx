@@ -2,11 +2,19 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
+import useSettings from '../lib/useSettings'
 
 export default function FloatingCTA({ lang = 'en' }) {
   const [visible, setVisible] = useState(false)
   const [nearContact, setNearContact] = useState(false)
   const tx = t[lang].floating
+  const settings = useSettings()
+
+  const waNumber  = settings.whatsapp_number || '251923814125'
+  const waText    = encodeURIComponent("Hello Awra Designs, I'd like to discuss a project.")
+  const waHref    = `https://wa.me/${waNumber}?text=${waText}`
+  const phone     = settings.contact_phone || '+251 92 381 4125'
+  const telHref   = `tel:${phone.replace(/\s/g, '')}`
 
   useEffect(() => {
     const handleScroll = throttle(() => {
@@ -35,7 +43,7 @@ export default function FloatingCTA({ lang = 'en' }) {
           <div className="bg-[#0d0d0d] border-t border-neutral-800 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <div className="flex gap-2">
               <a
-                href="https://wa.me/251923814125?text=Hello%20Awra%20Designs%2C%20I%27d%20like%20to%20discuss%20a%20project."
+                href={waHref}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide"
                 aria-label="Chat on WhatsApp"
@@ -50,7 +58,7 @@ export default function FloatingCTA({ lang = 'en' }) {
                 </AnimatePresence>
               </a>
               <a
-                href="tel:+251923814125"
+                href={telHref}
                 className="flex items-center justify-center gap-2 px-5 py-3 border border-neutral-700 text-white text-xs font-medium tracking-wide"
                 aria-label="Call us"
               >

@@ -5,7 +5,8 @@ import t from '../utils/translations'
 import QuoteModal from './QuoteModal'
 import PermitCalculator from './PermitCalculator'
 import { trackView } from '../lib/analytics'
-import { BlueprintGrid, SheetRef } from './ArchDetails'
+import { SheetRef } from './ArchDetails'
+import ArchBlueprint from './ArchBlueprint'
 
 const Hero = ({ lang = 'en' }) => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
@@ -36,17 +37,8 @@ const Hero = ({ lang = 'en' }) => {
         ref={ref}
         className="relative bg-[#0a0a0a] overflow-hidden"
       >
-        {/* Fine dot grid */}
-        <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-            backgroundSize: '32px 32px',
-          }}
-        />
-
-        {/* Blueprint grid overlay */}
-        <BlueprintGrid opacity={0.03} gridSize={80} />
+        {/* Architectural blueprint illustration — right side, fades toward left */}
+        <ArchBlueprint />
 
         {/* Top accent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
