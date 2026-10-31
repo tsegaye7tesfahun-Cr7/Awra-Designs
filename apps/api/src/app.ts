@@ -41,6 +41,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.ADMIN_URL,
   'https://awradesigns.pro.et',
+  'https://awradesigns.et',
   'https://awradesigns.com',
   'http://localhost:5173',
   'http://localhost:5174',
