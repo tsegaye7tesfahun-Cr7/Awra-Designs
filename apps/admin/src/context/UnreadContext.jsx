@@ -7,6 +7,9 @@ export function UnreadProvider({ children }) {
   const [unread, setUnread] = useState(0)
 
   const refresh = useCallback(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    
     api.get('/admin/dashboard')
       .then(d => setUnread(d.data?.messages?.unread ?? 0))
       .catch(() => {})
