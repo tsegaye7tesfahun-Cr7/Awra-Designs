@@ -13,7 +13,6 @@ const About        = lazy(() => import('./components/About'))
 const Testimonials = lazy(() => import('./components/Testimonials'))
 const Contact      = lazy(() => import('./components/Contact'))
 const Footer       = lazy(() => import('./components/Footer'))
-const PermitCalculator = lazy(() => import('./components/PermitCalculator'))
 
 const SCROLL_THROTTLE_MS = 100
 
@@ -47,9 +46,6 @@ function App() {
       <Hero lang={lang} />
       <LazySection fallback={<SectionFallback />} rootMargin="300px">
         <Portfolio lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <PermitCalculator lang={lang} />
       </LazySection>
       <LazySection fallback={<SectionFallback />} rootMargin="300px">
         <About lang={lang} />

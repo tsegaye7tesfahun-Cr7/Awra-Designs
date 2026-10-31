@@ -6,38 +6,15 @@
  *       Labels marked with (?) require administrative verification.
  */
 
-// ── Building Types ─────────────────────────────────────────────────────────
-export const BUILDING_TYPES = [
-  { value: 'residential', label: 'Residential' },
-  { value: 'commercial',  label: 'Commercial'  },  // future
-  { value: 'mixed',       label: 'Mixed Use'   },  // future
-]
-
 // ── Building Permit Fee by Floor Count (2017 E.C. Schedule) ──────────────
 // Each entry: { maxFloors: number | Infinity, fee: number }
-export const PERMIT_FEE_TIERS = {
-  residential: [
-    { maxFloors: 1,      fee: 30_000 },
-    { maxFloors: 5,      fee: 35_000 },
-    { maxFloors: 10,     fee: 45_000 },
-    { maxFloors: 15,     fee: 50_000 },
-    { maxFloors: Infinity, fee: 60_000 },
-  ],
-  commercial: [
-    { maxFloors: 1,      fee: 40_000 },
-    { maxFloors: 5,      fee: 50_000 },
-    { maxFloors: 10,     fee: 65_000 },
-    { maxFloors: 15,     fee: 80_000 },
-    { maxFloors: Infinity, fee: 100_000 },
-  ],
-  mixed: [
-    { maxFloors: 1,      fee: 40_000 },
-    { maxFloors: 5,      fee: 50_000 },
-    { maxFloors: 10,     fee: 65_000 },
-    { maxFloors: 15,     fee: 80_000 },
-    { maxFloors: Infinity, fee: 100_000 },
-  ],
-}
+export const PERMIT_FEE_TIERS = [
+  { maxFloors: 1,      fee: 30_000 },
+  { maxFloors: 5,      fee: 35_000 },
+  { maxFloors: 10,     fee: 45_000 },
+  { maxFloors: 15,     fee: 50_000 },
+  { maxFloors: Infinity, fee: 60_000 },
+]
 
 // ── Additional Service Category 2 ─────────────────────────────────────────
 // These are optional services - only one can be selected at a time

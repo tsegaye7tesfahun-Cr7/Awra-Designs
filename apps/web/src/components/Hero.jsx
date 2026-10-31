@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import QuoteModal from './QuoteModal'
+import PermitCalculator from './PermitCalculator'
 import { trackView } from '../lib/analytics'
 import { SheetRef } from './ArchDetails'
 import ArchBlueprint from './ArchBlueprint'
@@ -11,8 +12,23 @@ const Hero = ({ lang = 'en' }) => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
   const tx = t[lang].hero
   const [quoteOpen, setQuoteOpen] = useState(false)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   useEffect(() => { trackView('hero') }, [])
+
+  // Close calculator on ESC
+  useEffect(() => {
+    if (!calculatorOpen) return
+    const fn = (e) => { if (e.key === 'Escape') setCalculatorOpen(false) }
+    document.addEventListener('keydown', fn)
+    return () => document.removeEventListener('keydown', fn)
+  }, [calculatorOpen])
+
+  // Lock body scroll when open
+  useEffect(() => {
+    document.body.style.overflow = calculatorOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [calculatorOpen])
 
   return (
     <>
@@ -124,10 +140,7 @@ const Hero = ({ lang = 'en' }) => {
               </button>
 
               <button
-                onClick={() => {
-                  const el = document.getElementById('permit-calculator')
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
+                onClick={() => setCalculatorOpen(true)}
                 className="group inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
               >
                 {lang === 'am' ? 'የፍቃድ ክፍያ ማስላት' : 'Permit Calculator'}
@@ -144,6 +157,57 @@ const Hero = ({ lang = 'en' }) => {
 
       {/* Quote modal */}
       <QuoteModal isOpen={quoteOpen} onClose={() => setQuoteOpen(false)} lang={lang} />
+
+      {/* Permit Calculator modal */}
+      <AnimatePresence>
+        {calculatorOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setCalculatorOpen(false)}
+            />
+
+            {/* Modal — centered overlay */}
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <motion.div
+                className="relative bg-[#0f0f0f] border border-neutral-800 w-full max-w-4xl max-h-[90vh] overflow-hidden"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => setCalculatorOpen(false)}
+                  className="absolute top-4 right-4 z-10 text-neutral-500 hover:text-white transition-colors"
+                  aria-label="Close calculator"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M15 5L5 15M5 5l10 10"/>
+                  </svg>
+                </button>
+
+                {/* Scrollable content */}
+                <div className="overflow-y-auto max-h-[90vh]">
+                  <PermitCalculator inline lang={lang} onClose={() => setCalculatorOpen(false)} />
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }

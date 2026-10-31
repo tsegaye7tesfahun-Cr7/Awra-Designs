@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { SERVICE_CATEGORY_2, SERVICE_CATEGORY_3, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
 import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
 import t from '../utils/translations'
@@ -111,13 +111,15 @@ function FeeRow({ label, amount }) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export default function PermitCalculator({ inline = false, lang = 'en' }) {
+export default function PermitCalculator({ inline = false, lang = 'en', onClose }) {
   const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: !inline })
   const tx = t[lang].permit
 
   // Form state
   const [floorCount,         setFloorCount]         = useState('')
   const [basement,           setBasement]           = useState('none')
+  const [serviceCategory2,  setServiceCategory2]  = useState('none')
+  const [serviceCategory3,  setServiceCategory3]  = useState('none')
   const [errors,             setErrors]             = useState({})
   const [result,             setResult]             = useState(null)
   const [calculated,         setCalculated]         = useState(false)
@@ -126,9 +128,9 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   useEffect(() => {
     if (!calculated) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ floorCount: floors, basement })
+    const res = calculatePermitFee({ floorCount: floors, basement, serviceCategory2, serviceCategory3 })
     setResult(res)
-  }, [floorCount, basement, calculated])
+  }, [floorCount, basement, serviceCategory2, serviceCategory3, calculated])
 
   const validate = useCallback(() => {
     const e = {}
@@ -143,7 +145,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handleCalculate = () => {
     if (!validate()) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ floorCount: floors, basement })
+    const res = calculatePermitFee({ floorCount: floors, basement, serviceCategory2, serviceCategory3 })
     setResult(res)
     setCalculated(true)
   }
@@ -151,6 +153,8 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handleReset = () => {
     setFloorCount('')
     setBasement('none')
+    setServiceCategory2('none')
+    setServiceCategory3('none')
     setErrors({})
     setResult(null)
     setCalculated(false)
@@ -159,7 +163,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handlePrint = () => {
     if (!result) return
     const summary = generateCalculationSummary(
-      { floorCount: parseInt(floorCount, 10), basement },
+      { floorCount: parseInt(floorCount, 10), basement, serviceCategory2, serviceCategory3 },
       result
     )
     const printWindow = window.open('', '_blank')
@@ -188,6 +192,8 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
           <div class="section">
             <p><span class="label">Number of Floors:</span> <span class="value">${summary.floorCount}</span></p>
             <p><span class="label">Basement Levels:</span> <span class="value">${summary.basementLevel}</span></p>
+            <p><span class="label">Service Category 2:</span> <span class="value">${summary.serviceCategory2}</span></p>
+            <p><span class="label">Service Category 3:</span> <span class="value">${summary.serviceCategory3}</span></p>
           </div>
           <div class="section">
             <h2>Fee Breakdown</h2>
@@ -215,9 +221,13 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     const lines = result ? [
       `Number of Floors: ${floorCount}`,
       `Basement: ${BASEMENT_OPTIONS.find(b => b.value === basement)?.label}`,
+      `Service Category 2: ${SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)?.label}`,
+      `Service Category 3: ${SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)?.label}`,
       ``,
       `Estimated Fees:`,
       `  Base Permit Fee: ${formatETB(result.basePermitFee)}`,
+      `  Service Category 2: ${formatETB(result.serviceCategory2)}`,
+      `  Service Category 3: ${formatETB(result.serviceCategory3)}`,
       `  Basement Fee: ${formatETB(result.basement)}`,
       `  Total Estimated Cost: ${formatETB(result.total)}`,
     ].join('\n') : ''
@@ -226,10 +236,13 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { floorCount, basement, result },
+      permitData: { floorCount, basement, serviceCategory2, serviceCategory3, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
+
+    // Close modal
+    onClose?.()
 
     // Scroll to contact
     const el = document.getElementById('contact')
@@ -240,7 +253,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     <section
       id="permit-calculator"
       ref={ref}
-      className="relative bg-[#0a0a0a] overflow-hidden"
+      className={`relative bg-[#0a0a0a] overflow-hidden ${inline ? '' : ''}`}
     >
       {/* Floor plan fragment — decorative */}
       {!inline && <FloorPlanFragment opacity={0.02} className="w-96 h-72 top-0 right-0 hidden xl:block" />}
@@ -300,6 +313,24 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
               value={basement}
               onChange={setBasement}
               options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: lang === 'am' ? (b.value === 'none' ? tx.none : b.value === 'one' ? tx.oneBasement : b.value === 'two' ? tx.twoBasements : tx.threeBasements) : b.label }))}
+            />
+
+            {/* Service Category 2 */}
+            <Dropdown
+              id="serviceCategory2"
+              label={tx.serviceCategory2}
+              value={serviceCategory2}
+              onChange={setServiceCategory2}
+              options={SERVICE_CATEGORY_2.map(s => ({ value: s.value, label: s.label }))}
+            />
+
+            {/* Service Category 3 */}
+            <Dropdown
+              id="serviceCategory3"
+              label={tx.serviceCategory3}
+              value={serviceCategory3}
+              onChange={setServiceCategory3}
+              options={SERVICE_CATEGORY_3.map(s => ({ value: s.value, label: s.label }))}
             />
 
             {/* Buttons */}
