@@ -5,6 +5,7 @@ import t from '../utils/translations'
 import { trackView, trackEvent } from '../lib/analytics'
 import { FloorPlanFragment, SheetRef } from './ArchDetails'
 import ProjectDetailModal from './ProjectDetailModal'
+import ProjectComparison from './ProjectComparison'
 
 function getProjectId(index) {
   return `AW-${String(index + 1).padStart(3, '0')}`
@@ -163,6 +164,7 @@ export default function Portfolio({ lang = 'en' }) {
   const [groups, setGroups] = useState(GROUPS)
   const [waNumber, setWaNumber] = useState('251923814125')
   const [cursorVisible, setCursorVisible] = useState(false)
+  const [showComparison, setShowComparison] = useState(false)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
 
@@ -278,8 +280,30 @@ export default function Portfolio({ lang = 'en' }) {
               {tx.heading}
             </motion.h2>
           </AnimatePresence>
-          <span className="label-text">{tx.projects(total)}</span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowComparison(!showComparison)}
+              className="text-xs text-neutral-500 hover:text-white transition-colors"
+            >
+              {showComparison ? 'Hide Compare' : 'Compare Projects'}
+            </button>
+            <span className="label-text">{tx.projects(total)}</span>
+          </div>
         </motion.div>
+
+        {/* Comparison Panel */}
+        <AnimatePresence>
+          {showComparison && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-6 p-4 border border-neutral-900 bg-neutral-950/50"
+            >
+              <ProjectComparison projects={visible} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Group tabs */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6, delay: 0.1 }}
