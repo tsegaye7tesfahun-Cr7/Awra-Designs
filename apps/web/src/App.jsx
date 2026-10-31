@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ProgressBar from './components/ProgressBar'
@@ -6,6 +6,8 @@ import Cursor from './components/Cursor'
 import FloatingCTA from './components/FloatingCTA'
 import LazySection from './components/LazySection'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
+import NotFound from './components/NotFound'
+import Error from './components/Error'
 import { ThemeProvider } from './context/ThemeContext'
 import { throttle } from './utils/throttle'
 
@@ -46,21 +48,23 @@ function App() {
         <FloatingCTA lang={lang} />
         <Navbar isScrolled={isScrolled} lang={lang} setLang={setLang} />
         <Hero lang={lang} />
-        <LazySection fallback={<SectionFallback />} rootMargin="300px">
-          <Portfolio lang={lang} />
-        </LazySection>
-        <LazySection fallback={<SectionFallback />} rootMargin="300px">
-          <About lang={lang} />
-        </LazySection>
-        <LazySection fallback={<SectionFallback />} rootMargin="300px">
-          <Testimonials lang={lang} />
-        </LazySection>
-        <LazySection fallback={<SectionFallback />} rootMargin="300px">
-          <Contact lang={lang} />
-        </LazySection>
-        <LazySection fallback={<SectionFallback />} rootMargin="300px">
-          <Footer lang={lang} />
-        </LazySection>
+        <Suspense fallback={<SectionFallback />}>
+          <LazySection fallback={<SectionFallback />} rootMargin="300px">
+            <Portfolio lang={lang} />
+          </LazySection>
+          <LazySection fallback={<SectionFallback />} rootMargin="300px">
+            <About lang={lang} />
+          </LazySection>
+          <LazySection fallback={<SectionFallback />} rootMargin="300px">
+            <Testimonials lang={lang} />
+          </LazySection>
+          <LazySection fallback={<SectionFallback />} rootMargin="300px">
+            <Contact lang={lang} />
+          </LazySection>
+          <LazySection fallback={<SectionFallback />} rootMargin="300px">
+            <Footer lang={lang} />
+          </LazySection>
+        </Suspense>
       </div>
     </ThemeProvider>
   )
