@@ -26,3 +26,6 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'Too many login attempts, please try again later.' },
 })
+
+/** Per-user rate limiter for authenticated users — 1000 per 15 min */
+export { perUserRateLimit } from './userRateLimit'

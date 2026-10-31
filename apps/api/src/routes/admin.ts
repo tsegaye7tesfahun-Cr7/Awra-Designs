@@ -2,10 +2,17 @@ import { Router, Response, NextFunction } from 'express'
 import prisma from '../lib/prisma'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { validateCSRFToken } from '../middleware/csrf'
+import { perUserRateLimit } from '../middleware/rateLimiter'
 import { log } from '../lib/activityLog'
 
 export const adminRouter = Router()
 adminRouter.use(requireAuth)
+
+// Apply per-user rate limiting for authenticated admin users
+adminRouter.use(perUserRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // 1000 requests per 15 minutes per user
+}))
 
 // Validate CSRF for state-changing methods (POST, PUT, PATCH, DELETE)
 adminRouter.use((req, res, next) => {
