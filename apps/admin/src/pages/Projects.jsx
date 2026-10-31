@@ -11,6 +11,7 @@ import PageHeader from '../components/PageHeader'
 import Btn from '../components/Btn'
 import SortableRow from '../components/SortableRow'
 import ConfirmDialog from '../components/ConfirmDialog'
+import EmptyState from '../components/EmptyState'
 import { useToast, ToastContainer } from '../components/Toast'
 import { timeAgo } from '../lib/timeAgo'
 
@@ -390,13 +391,17 @@ export default function Projects() {
             <div className="w-5 h-5 border border-neutral-700 border-t-white rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="text-sm text-neutral-600">
-              {projects.length === 0
-                ? <><span>No projects. </span><Link to="/projects/new" className="text-white underline">Create one</Link></>
-                : 'No projects in this category.'}
-            </p>
-          </div>
+          <EmptyState
+            title={projects.length === 0 ? 'No projects yet' : 'No projects in this category'}
+            description={projects.length === 0 ? 'Create your first project to get started' : 'Try selecting a different category'}
+            action={projects.length === 0 ? 'Create Project' : 'View All Projects'}
+            onAction={() => projects.length === 0 ? navigate('/projects/new') : setActiveGroup('all')}
+            icon={
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 002 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2M14 0V9a2 2 0 012-2V5a2 2 0 012-2h5" />
+              </svg>
+            }
+          />
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={filtered.map(p => p.id)} strategy={verticalListSortingStrategy}>

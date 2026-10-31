@@ -13,6 +13,7 @@ import DraftBanner from '../components/DraftBanner'
 import { useToast, ToastContainer } from '../components/Toast'
 import { useUnsavedWarning } from '../hooks/useUnsavedWarning'
 import { useDraftAutosave } from '../hooks/useDraftAutosave'
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
 
 const EMPTY = {
   title: '', category: '', filter: '', shortDescription: '', description: '',
@@ -68,6 +69,7 @@ export default function ProjectForm() {
   const [servicesInput, setServicesInput] = useState('')
   const [isDirty, setIsDirty] = useState(false)
   useUnsavedWarning(isDirty)
+  useKeyboardShortcuts()
 
   // Draft autosave — only for new projects (no id)
   const draftKey = id ? null : 'project-new-draft'
