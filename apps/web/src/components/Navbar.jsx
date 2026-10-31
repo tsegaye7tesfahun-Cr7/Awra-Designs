@@ -7,8 +7,8 @@ import useSettings from '../lib/useSettings'
 const SCROLL_THROTTLE_MS = 120
 
 // Section order matches page layout:
-// works → about → testimonials → blog → faq → contact
-const ALL_SECTIONS = ['home', 'works', 'about', 'testimonials', 'blog', 'faq', 'contact']
+// works → permit → about → testimonials → blog → faq → contact
+const ALL_SECTIONS = ['home', 'works', 'permit', 'about', 'testimonials', 'blog', 'faq', 'contact']
 
 const Navbar = ({ isScrolled, lang, setLang }) => {
   const [activeSection, setActiveSection] = useState('home')
@@ -48,6 +48,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
   // Desktop: all links including Testimonials, Blog, and FAQ
   const desktopLinks = [
     { name: tx.work,         id: 'works'        },
+    { name: t[lang].permit.heading, id: 'permit'       },
     { name: tx.about,        id: 'about'        },
     { name: tx.testimonials, id: 'testimonials' },
     { name: tx.blog,         id: 'blog'         },
@@ -57,9 +58,10 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
 
   // Mobile: shorter list — Testimonials, Blog, and FAQ removed
   const mobileLinks = [
-    { name: tx.work,    id: 'works'   },
-    { name: tx.about,   id: 'about'   },
-    { name: tx.contact, id: 'contact' },
+    { name: tx.work,         id: 'works'   },
+    { name: t[lang].permit.heading, id: 'permit'  },
+    { name: tx.about,        id: 'about'   },
+    { name: tx.contact,      id: 'contact' },
   ]
 
   const NavLink = ({ link }) => {

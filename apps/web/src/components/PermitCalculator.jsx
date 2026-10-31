@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { BUILDING_TYPES, PERMIT_SERVICES, BASEMENT_OPTIONS } from '../utils/permitFees'
-import { calculatePermitFee, formatETB } from '../utils/permitCalculator'
+import { BUILDING_TYPES, SERVICE_CATEGORY_2, SERVICE_CATEGORY_3, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
+import t from '../utils/translations'
 
 const labelClass = 'block text-[10px] uppercase tracking-[0.18em] text-neutral-500 font-medium mb-1.5'
 
@@ -110,87 +111,143 @@ function FeeRow({ label, amount }) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export default function PermitCalculator({ inline = false, onConsultationRequest }) {
-  const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: true })
+export default function PermitCalculator({ inline = false, lang = 'en' }) {
+  const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: !inline })
+  const tx = t[lang].permit
 
   // Form state
-  const [buildingType,   setBuildingType]   = useState('residential')
-  const [floorArea,      setFloorArea]      = useState('')
-  const [permitService,  setPermitService]  = useState('new')
-  const [basement,       setBasement]       = useState('none')
-  const [errors,         setErrors]         = useState({})
-  const [result,         setResult]         = useState(null)
-  const [calculated,     setCalculated]     = useState(false)
+  const [buildingType,       setBuildingType]       = useState('residential')
+  const [floorCount,         setFloorCount]         = useState('')
+  const [basement,           setBasement]           = useState('none')
+  const [serviceCategory2,  setServiceCategory2]  = useState('none')
+  const [serviceCategory3,  setServiceCategory3]  = useState('none')
+  const [errors,             setErrors]             = useState({})
+  const [result,             setResult]             = useState(null)
+  const [calculated,         setCalculated]         = useState(false)
 
   // Live calculation whenever inputs change
   useEffect(() => {
     if (!calculated) return
-    const area = parseFloat(floorArea)
-    const res  = calculatePermitFee({ buildingType, floorArea: area, permitService, basement })
+    const floors = parseInt(floorCount, 10)
+    const res = calculatePermitFee({ buildingType, floorCount: floors, basement, serviceCategory2, serviceCategory3 })
     setResult(res)
-  }, [buildingType, floorArea, permitService, basement, calculated])
+  }, [buildingType, floorCount, basement, serviceCategory2, serviceCategory3, calculated])
 
   const validate = useCallback(() => {
     const e = {}
-    const area = parseFloat(floorArea)
-    if (!floorArea || isNaN(area) || area <= 0) {
-      e.floorArea = 'Enter a valid floor area (m²)'
+    const floors = parseInt(floorCount, 10)
+    if (!floorCount || isNaN(floors) || floors < 1 || !Number.isInteger(floors)) {
+      e.floorCount = lang === 'am' ? 'የሚስማማ የፎቅ ቁጥር ያስገቡ' : 'Enter a valid number of floors (1 or more)'
     }
     setErrors(e)
     return Object.keys(e).length === 0
-  }, [floorArea])
+  }, [floorCount, lang])
 
   const handleCalculate = () => {
     if (!validate()) return
-    const area = parseFloat(floorArea)
-    const res  = calculatePermitFee({ buildingType, floorArea: area, permitService, basement })
+    const floors = parseInt(floorCount, 10)
+    const res = calculatePermitFee({ buildingType, floorCount: floors, basement, serviceCategory2, serviceCategory3 })
     setResult(res)
     setCalculated(true)
   }
 
   const handleReset = () => {
     setBuildingType('residential')
-    setFloorArea('')
-    setPermitService('new')
+    setFloorCount('')
     setBasement('none')
+    setServiceCategory2('none')
+    setServiceCategory3('none')
     setErrors({})
     setResult(null)
     setCalculated(false)
+  }
+
+  const handlePrint = () => {
+    if (!result) return
+    const summary = generateCalculationSummary(
+      { buildingType, floorCount: parseInt(floorCount, 10), basement, serviceCategory2, serviceCategory3 },
+      result
+    )
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Building Permit Fee Estimate - ${summary.referenceCode}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
+            h1 { color: #333; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .header { margin-bottom: 30px; }
+            .section { margin: 20px 0; }
+            .label { font-weight: bold; color: #666; }
+            .value { color: #000; }
+            .total { font-size: 24px; font-weight: bold; color: #000; margin-top: 20px; }
+            .disclaimer { font-size: 11px; color: #666; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+            .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Building Permit Fee Estimate</h1>
+            <p><span class="label">Reference Code:</span> <span class="value">${summary.referenceCode}</span></p>
+            <p><span class="label">Date:</span> <span class="value">${summary.date}</span></p>
+          </div>
+          <div class="section">
+            <p><span class="label">Building Type:</span> <span class="value">${summary.buildingType}</span></p>
+            <p><span class="label">Number of Floors:</span> <span class="value">${summary.floorCount}</span></p>
+            <p><span class="label">Basement Levels:</span> <span class="value">${summary.basementLevel}</span></p>
+            <p><span class="label">Service Category 2:</span> <span class="value">${summary.serviceCategory2}</span></p>
+            <p><span class="label">Service Category 3:</span> <span class="value">${summary.serviceCategory3}</span></p>
+          </div>
+          <div class="section">
+            <h2>Fee Breakdown</h2>
+            ${summary.breakdown.map(item => `
+              <div class="row">
+                <span>${item.label}</span>
+                <span>ETB ${item.amount.toLocaleString('en-US')}</span>
+              </div>
+            `).join('')}
+            <div class="total">Total: ETB ${summary.total.toLocaleString('en-US')}</div>
+          </div>
+          <div class="disclaimer">
+            <p><strong>Source:</strong> ${summary.source}</p>
+            <p>${summary.disclaimer}</p>
+          </div>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+    printWindow.print()
   }
 
   const handleConsultation = () => {
     // Build prefill message
     const lines = result ? [
       `Building Type: ${BUILDING_TYPES.find(b => b.value === buildingType)?.label}`,
-      `Floor Area: ${floorArea} m²`,
-      `Permit Service: ${PERMIT_SERVICES.find(s => s.value === permitService)?.label}`,
+      `Number of Floors: ${floorCount}`,
       `Basement: ${BASEMENT_OPTIONS.find(b => b.value === basement)?.label}`,
+      `Service Category 2: ${SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)?.label}`,
+      `Service Category 3: ${SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)?.label}`,
       ``,
       `Estimated Fees:`,
-      `  Design Review Fee: ${formatETB(result.designReview)}`,
-      `  Permit Service Fee: ${formatETB(result.permitService)}`,
+      `  Base Permit Fee: ${formatETB(result.basePermitFee)}`,
+      `  Service Category 2: ${formatETB(result.serviceCategory2)}`,
+      `  Service Category 3: ${formatETB(result.serviceCategory3)}`,
       `  Basement Fee: ${formatETB(result.basement)}`,
       `  Total Estimated Cost: ${formatETB(result.total)}`,
     ].join('\n') : ''
 
-    // Fire the prefill event FIRST (before closing the drawer)
-    // Also persist to sessionStorage so lazy-loaded Contact picks it up even if not mounted yet
+    // Fire the prefill event
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { buildingType, floorArea, permitService, basement, result },
+      permitData: { buildingType, floorCount, basement, serviceCategory2, serviceCategory3, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
 
-    // Close the drawer
-    onConsultationRequest?.()
-
-    // Wait for drawer close animation (~450ms), then scroll to contact
-    setTimeout(() => {
-      const el = document.getElementById('contact')
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 450)
+    // Scroll to contact
+    const el = document.getElementById('contact')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -216,10 +273,10 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
         >
           <p className="label-text mb-3">Tools</p>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-medium text-white leading-tight">
-            Building Permit<br />Fee Calculator
+            {tx.heading}<br />{tx.subheading}
           </h2>
           <p className="text-neutral-500 text-sm mt-4 max-w-md leading-relaxed">
-            Estimate your Addis Ababa building permit review fee in seconds.
+            {tx.description}
           </p>
         </motion.div>
 
@@ -235,7 +292,7 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
             {/* Building Type */}
             <Dropdown
               id="buildingType"
-              label="Building Type"
+              label={tx.buildingType}
               value={buildingType}
               onChange={setBuildingType}
               options={BUILDING_TYPES.map(t => ({
@@ -245,40 +302,49 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
               }))}
             />
 
-            {/* Floor Area */}
+            {/* Floor Count */}
             <div>
-              <label htmlFor="floorArea" className={labelClass}>Total Floor Area (m²)</label>
+              <label htmlFor="floorCount" className={labelClass}>{tx.floorCount}</label>
               <input
-                id="floorArea"
+                id="floorCount"
                 type="number"
                 min="1"
                 step="1"
-                value={floorArea}
-                onChange={e => setFloorArea(e.target.value)}
+                value={floorCount}
+                onChange={e => setFloorCount(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCalculate()}
-                placeholder="e.g. 250"
+                placeholder={lang === 'am' ? 'ለምሳሌግ 5' : 'e.g. 5'}
                 className={`w-full bg-white/5 border text-white text-sm px-4 py-3 focus:outline-none focus:border-white/30 transition-colors placeholder-neutral-600 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                  ${errors.floorArea ? 'border-red-500/60' : 'border-white/10'}`}
+                  ${errors.floorCount ? 'border-red-500/60' : 'border-white/10'}`}
               />
-              {errors.floorArea && <p className="mt-1 text-[10px] text-red-400">{errors.floorArea}</p>}
+              {errors.floorCount && <p className="mt-1 text-[10px] text-red-400">{errors.floorCount}</p>}
             </div>
-
-            {/* Permit Service */}
-            <Dropdown
-              id="permitService"
-              label="Permit Service"
-              value={permitService}
-              onChange={setPermitService}
-              options={PERMIT_SERVICES.map(s => ({ value: s.value, label: s.label }))}
-            />
 
             {/* Basement */}
             <Dropdown
               id="basement"
-              label="Basement"
+              label={tx.basement}
               value={basement}
               onChange={setBasement}
-              options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: b.label }))}
+              options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: lang === 'am' ? (b.value === 'none' ? tx.none : b.value === 'one' ? tx.oneBasement : b.value === 'two' ? tx.twoBasements : tx.threeBasements) : b.label }))}
+            />
+
+            {/* Service Category 2 */}
+            <Dropdown
+              id="serviceCategory2"
+              label={tx.serviceCategory2}
+              value={serviceCategory2}
+              onChange={setServiceCategory2}
+              options={SERVICE_CATEGORY_2.map(s => ({ value: s.value, label: s.label }))}
+            />
+
+            {/* Service Category 3 */}
+            <Dropdown
+              id="serviceCategory3"
+              label={tx.serviceCategory3}
+              value={serviceCategory3}
+              onChange={setServiceCategory3}
+              options={SERVICE_CATEGORY_3.map(s => ({ value: s.value, label: s.label }))}
             />
 
             {/* Buttons */}
@@ -287,16 +353,25 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                 onClick={handleCalculate}
                 className="group inline-flex items-center gap-2.5 px-6 py-3 bg-white text-[#0a0a0a] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-neutral-200"
               >
-                Calculate Fee
+                {tx.calculate}
                 <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
               </button>
+
+              {result && (
+                <button
+                  onClick={handlePrint}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-700 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
+                >
+                  {tx.print}
+                </button>
+              )}
 
               {result && (
                 <button
                   onClick={handleConsultation}
                   className="inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-700 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
                 >
-                  Request Consultation With This Estimate
+                  {tx.requestConsultation}
                 </button>
               )}
 
@@ -305,14 +380,14 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                   onClick={handleReset}
                   className="inline-flex items-center px-4 py-3 text-neutral-600 text-xs font-medium uppercase tracking-widest hover:text-white transition-colors"
                 >
-                  Reset
+                  {tx.reset}
                 </button>
               )}
             </div>
 
             {/* Disclaimer */}
             <p className="text-neutral-700 text-[10px] leading-relaxed max-w-md pt-2">
-              This estimate is based on the Addis Ababa Building Permit Fee Schedule (2017 E.C.) and is provided for guidance only. Final fees may vary depending on project requirements and government regulations.
+              {tx.disclaimer}
             </p>
           </motion.div>
 
@@ -346,15 +421,15 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="10,0 10,10 0,10" stroke="#fff" strokeWidth="0.8"/></svg>
                   </span>
 
-                  <p className="label-text mb-6">Estimated Fee Breakdown</p>
+                  <p className="label-text mb-6">{tx.breakdown}</p>
 
-                  <FeeRow label="Design Review Fee"  amount={result.designReview} />
-                  <FeeRow label="Permit Service Fee" amount={result.permitService} />
-                  <FeeRow label="Basement Fee"       amount={result.basement} />
+                  {result.breakdown.map((item, idx) => (
+                    <FeeRow key={idx} label={item.label} amount={item.amount} />
+                  ))}
 
                   {/* Total */}
                   <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="label-text mb-2">Total Estimated Cost</p>
+                    <p className="label-text mb-2">{tx.total}</p>
                     <div className="font-display text-4xl md:text-5xl font-medium text-white tabular-nums">
                       ETB <AnimatedNumber value={result.total} />
                     </div>
@@ -363,28 +438,38 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                   {/* Reference info */}
                   <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">Reference Code</span>
+                      <span className="label-text text-neutral-600">{tx.referenceCode}</span>
                       <span className="label-text text-neutral-400 font-mono">
-                        {buildingType.slice(0,3).toUpperCase()}-{String(Math.ceil(parseFloat(floorArea || 0) / 100) * 100).padStart(4,'0')}
+                        {buildingType.slice(0,3).toUpperCase()}-{String(floorCount || 0).padStart(2,'0')}-{Math.floor(Math.random() * 9000) + 1000}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">Processing Category</span>
+                      <span className="label-text text-neutral-600">{tx.referenceYear}</span>
                       <span className="label-text text-neutral-400">
-                        {parseFloat(floorArea || 0) <= 200 ? 'Standard' : parseFloat(floorArea || 0) <= 500 ? 'Medium' : 'Complex'}
+                        {REGULATORY_INFO.referenceYear}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">Est. Processing Time</span>
+                      <span className="label-text text-neutral-600">{tx.processingTime}</span>
                       <span className="label-text text-neutral-400">
-                        {parseFloat(floorArea || 0) <= 200 ? '4–6 weeks' : parseFloat(floorArea || 0) <= 500 ? '6–10 weeks' : '10–16 weeks'}
+                        {parseInt(floorCount || 0) <= 5 ? '4–6 weeks' : parseInt(floorCount || 0) <= 10 ? '6–10 weeks' : '10–16 weeks'}
                       </span>
                     </div>
                   </div>
 
                   <p className="mt-4 text-neutral-600 text-[11px] leading-relaxed border-t border-white/5 pt-4">
-                    Need a complete design and permit package? AWRA Designs can handle the entire process from concept to approval.
+                    {tx.needCompleteDesign}
                   </p>
+
+                  {/* Regulatory transparency */}
+                  <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
+                    <p className="text-neutral-700 text-[10px] leading-relaxed">
+                      <span className="text-neutral-500">{tx.source}:</span> {REGULATORY_INFO.source}
+                    </p>
+                    <p className="text-neutral-700 text-[10px] leading-relaxed">
+                      {tx.amendmentNotice}
+                    </p>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div
@@ -405,7 +490,7 @@ export default function PermitCalculator({ inline = false, onConsultationRequest
                     <polyline points="8,72 8,88 24,88" />
                     <polyline points="88,72 88,88 72,88" />
                   </svg>
-                  <p className="text-neutral-600 text-xs uppercase tracking-widest">Enter details to calculate</p>
+                  <p className="text-neutral-600 text-xs uppercase tracking-widest">{tx.enterDetails}</p>
                 </motion.div>
               )}
             </AnimatePresence>
