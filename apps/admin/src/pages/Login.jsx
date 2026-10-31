@@ -84,7 +84,8 @@ export default function Login() {
           )}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 text-center">
+          <img src="/logo.png" alt="Awra Admin" className="h-16 mx-auto mb-4" />
           <h1 className="text-xl font-medium text-white">Awra Admin</h1>
           <p className="text-xs text-neutral-500 mt-1">Sign in to manage your content</p>
         </div>
