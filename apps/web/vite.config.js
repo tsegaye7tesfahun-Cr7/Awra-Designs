@@ -22,6 +22,7 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
+          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: '/favicon.ico', sizes: '64x64 32x32 16x16', type: 'image/x-icon', purpose: 'any' },
           { src: '/favicon-16x16.png', sizes: '16x16', type: 'image/png', purpose: 'any' },
           { src: '/favicon-32x32.png', sizes: '32x32', type: 'image/png', purpose: 'any' },

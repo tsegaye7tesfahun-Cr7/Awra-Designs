@@ -139,7 +139,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
             className="flex-shrink-0 flex flex-col items-start gap-0.5 min-w-0"
           >
             <img
-              src="/favicon.svg"
+              src="/images/Asset 1.svg"
               alt="Awra Designs"
               className="h-5 xs:h-6 md:h-8 w-auto"
               loading="eager"

@@ -80,7 +80,7 @@ export default function Footer({ lang = 'en' }) {
         {/* Desktop — icons + text labels */}
         <div className="hidden lg:flex items-center justify-between py-8">
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top">
-            <img src="/favicon.svg" alt="Awra Designs"
+            <img src="/images/Asset 1.svg" alt="Awra Designs"
               className="h-6 w-auto opacity-40 hover:opacity-80 transition-opacity"
               loading="lazy" />
           </button>
