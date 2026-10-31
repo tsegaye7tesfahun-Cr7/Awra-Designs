@@ -70,7 +70,7 @@ export default function Layout() {
   const SidebarContent = () => (
     <>
       <div className="px-5 py-6 border-b border-neutral-900 flex items-center justify-between">
-        <span className="text-sm font-medium text-white tracking-wide">Awra Admin</span>
+        <img src="/logo.png" alt="Awra Admin" className="h-8" />
         <button onClick={closeSidebar} className="md:hidden text-neutral-500 hover:text-white text-lg leading-none">✕</button>
       </div>
 
