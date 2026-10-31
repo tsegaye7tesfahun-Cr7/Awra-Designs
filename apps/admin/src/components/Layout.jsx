@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useUnread } from '../context/UnreadContext'
+import Breadcrumbs from './Breadcrumbs'
 import {
   DashboardIcon, AnalyticsNavIcon, ProjectsIcon, CategoriesIcon,
   MediaIcon, AboutIcon, TestimonialsIcon, FAQIcon, BlogIcon,
@@ -166,7 +167,10 @@ export default function Layout() {
         </div>
 
         <main className="flex-1 overflow-auto">
-          <Outlet />
+          <div className="p-6 md:p-8">
+            <Breadcrumbs />
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
