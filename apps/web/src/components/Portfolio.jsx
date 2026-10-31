@@ -166,12 +166,14 @@ export default function Portfolio({ lang = 'en' }) {
   const [waNumber, setWaNumber] = useState('251923814125')
   const [cursorVisible, setCursorVisible] = useState(false)
   const [showComparison, setShowComparison] = useState(false)
+  const [loading, setLoading] = useState(true)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
 
   useEffect(() => {
     trackView('projects')
+    setLoading(true)
     // Fetch settings for WhatsApp number
     fetch(`${API_URL}/settings`, { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('not ok'); return r.json() })
@@ -204,6 +206,7 @@ export default function Portfolio({ lang = 'en' }) {
         }
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
 
     // Fetch groups — fall back to hardcoded GROUPS if unavailable
     fetch(`${API_URL}/project-groups`)
@@ -465,61 +468,80 @@ export default function Portfolio({ lang = 'en' }) {
 
       {/* Grid */}
       <AnimatePresence mode="wait">
-        <motion.div key={`${activeGroup}-${activeSub}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px lg:gap-4 xl:gap-6 bg-neutral-900 lg:bg-transparent mt-px">
-          {grid.map((item, idx) => (
-            <FadeIn key={item.id} delay={idx * 0.03} className="bg-[#0a0a0a] group cursor-pointer overflow-hidden"
-              onMouseEnter={() => setCursorVisible(true)} onMouseLeave={() => setCursorVisible(false)}>
-              <div onClick={() => openModal(item)} className="relative overflow-hidden aspect-[16/9]">
-                <img src={item.images[0]} alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-[1s] group-hover:scale-[1.04]"
-                  loading={idx < 3 ? 'eager' : 'lazy'} decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                {item.images.length > 1 && (
-                  <span className="absolute top-3 right-3 label-text bg-[#0a0a0a]/70 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {tx.views(item.images.length)}
-                  </span>
-                )}
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px lg:gap-4 xl:gap-6 bg-neutral-900 lg:bg-transparent mt-px"
+          >
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-[#0a0a0a]">
+                <div className="aspect-[16/9] bg-neutral-900 animate-pulse" />
+                <div className="px-4 py-3 md:px-5 md:py-4 border-t border-neutral-900">
+                  <div className="h-4 bg-neutral-800 rounded animate-pulse mb-2 w-3/4" />
+                  <div className="h-3 bg-neutral-800 rounded animate-pulse w-1/4" />
+                </div>
               </div>
-              <div className="px-4 py-3 md:px-5 md:py-4 border-t border-neutral-900">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[13px] md:text-sm font-medium text-white truncate">{item.title}</p>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id) }}
-                      className={`p-1.5 transition-colors ${isFavorite(item.id) ? 'text-red-500' : 'text-neutral-600 hover:text-white'}`}
-                      aria-label={isFavorite(item.id) ? 'Remove from favorites' : 'Add to favorites'}
-                    >
-                      <svg width="16" height="16" fill={isFavorite(item.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                    </button>
-                    <span className="label-text">{item.year}</span>
-                    <button onClick={() => openModal(item)}
-                      className="label-text px-2.5 py-1 border border-neutral-800 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap"
-                      aria-label={`View details for ${item.title}`}>
-                      {tx.open.replace(' →', '')} →
-                    </button>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div key={`${activeGroup}-${activeSub}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px lg:gap-4 xl:gap-6 bg-neutral-900 lg:bg-transparent mt-px">
+            {grid.map((item, idx) => (
+              <FadeIn key={item.id} delay={idx * 0.03} className="bg-[#0a0a0a] group cursor-pointer overflow-hidden"
+                onMouseEnter={() => setCursorVisible(true)} onMouseLeave={() => setCursorVisible(false)}>
+                <div onClick={() => openModal(item)} className="relative overflow-hidden aspect-[16/9]">
+                  <img src={item.images[0]} alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-[1s] group-hover:scale-[1.04]"
+                    loading={idx < 3 ? 'eager' : 'lazy'} decoding="async" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {item.images.length > 1 && (
+                    <span className="absolute top-3 right-3 label-text bg-[#0a0a0a]/70 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {tx.views(item.images.length)}
+                    </span>
+                  )}
+                </div>
+                <div className="px-4 py-3 md:px-5 md:py-4 border-t border-neutral-900">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[13px] md:text-sm font-medium text-white truncate">{item.title}</p>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id) }}
+                        className={`p-1.5 transition-colors ${isFavorite(item.id) ? 'text-red-500' : 'text-neutral-600 hover:text-white'}`}
+                        aria-label={isFavorite(item.id) ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <svg width="16" height="16" fill={isFavorite(item.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                      </button>
+                      <span className="label-text">{item.year}</span>
+                      <button onClick={() => openModal(item)}
+                        className="label-text px-2.5 py-1 border border-neutral-800 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap"
+                        aria-label={`View details for ${item.title}`}>
+                        {tx.open.replace(' →', '')} →
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="label-text text-neutral-600">{getProjectId(idx)}</span>
+                    {item.type && <><span className="label-text text-neutral-800">·</span><span className="label-text text-neutral-600 truncate">{item.type}</span></>}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="label-text text-neutral-600">{getProjectId(idx)}</span>
-                  {item.type && <><span className="label-text text-neutral-800">·</span><span className="label-text text-neutral-600 truncate">{item.type}</span></>}
-                </div>
-              </div>
-            </FadeIn>
-          ))}
-          {grid.length === 0 && (
-            <div className="col-span-full py-24 flex flex-col items-center gap-3 text-center">
-              <p className="text-neutral-600 text-sm">No projects in this category yet.</p>
-              <button onClick={() => { setActiveGroup('all'); setActiveSub(null) }}
+              </FadeIn>
+            ))}
+            {grid.length === 0 && (
+              <div className="col-span-full py-24 flex flex-col items-center gap-3 text-center">
+                <p className="text-neutral-600 text-sm">No projects in this category yet.</p>
+                <button onClick={() => { setActiveGroup('all'); setActiveSub(null) }}
                 className="label-text text-neutral-500 hover:text-white transition-colors underline underline-offset-4">
                 View all work
-              </button>
-            </div>
-          )}
-        </motion.div>
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Modal */}
