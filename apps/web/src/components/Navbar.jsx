@@ -4,6 +4,7 @@ import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
 import useSettings from '../lib/useSettings'
 import SearchModal from './SearchModal'
+import { useTheme } from '../context/ThemeContext'
 
 const SCROLL_THROTTLE_MS = 120
 
@@ -15,6 +16,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [searchOpen, setSearchOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,12 +72,12 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
         key={link.id}
         onClick={() => scrollToSection(link.id)}
         className={`relative label-text transition-colors duration-300 whitespace-nowrap group ${
-          isActive ? 'text-white' : 'text-neutral-500 hover:text-white'
+          isActive ? 'text-white dark:text-white light:text-neutral-900' : 'text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900'
         }`}
       >
         {link.name}
         <span
-          className={`absolute -bottom-0.5 left-0 h-px bg-white transition-all duration-300 ${
+          className={`absolute -bottom-0.5 left-0 h-px bg-white dark:bg-white light:bg-neutral-900 transition-all duration-300 ${
             isActive
               ? 'w-full opacity-100'
               : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-40'
@@ -89,15 +91,33 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
     <button
       onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}
       aria-label="Toggle language"
-      className="flex items-center gap-0.5 xs:gap-1 border border-neutral-800 hover:border-neutral-600 transition-colors px-1.5 xs:px-2.5 py-1 flex-shrink-0"
+      className="flex items-center gap-0.5 xs:gap-1 border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 hover:border-neutral-600 dark:hover:border-neutral-600 light:hover:border-neutral-400 transition-colors px-1.5 xs:px-2.5 py-1 flex-shrink-0"
     >
-      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'en' ? '!text-white' : '!text-neutral-600'}`}>
+      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'en' ? '!text-white dark:!text-white light:!text-neutral-900' : '!text-neutral-600 dark:!text-neutral-600 light:!text-neutral-500'}`}>
         EN
       </span>
-      <span className="label-text text-[9px] xs:text-[10px] text-neutral-700">/</span>
-      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'am' ? '!text-white' : '!text-neutral-600'}`}>
+      <span className="label-text text-[9px] xs:text-[10px] text-neutral-700 dark:text-neutral-700 light:text-neutral-400">/</span>
+      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'am' ? '!text-white dark:!text-white light:!text-neutral-900' : '!text-neutral-600 dark:!text-neutral-600 light:!text-neutral-500'}`}>
         አማ
       </span>
+    </button>
+  )
+
+  const ThemeToggle = () => (
+    <button
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      className="text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900 transition-colors flex-shrink-0"
+    >
+      {theme === 'dark' ? (
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ) : (
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      )}
     </button>
   )
 
@@ -107,7 +127,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-[#0a0a0a]/95 backdrop-blur-md' : 'bg-transparent'
+        isScrolled ? 'bg-[#0a0a0a]/95 dark:bg-[#0a0a0a]/95 light:bg-white/95 backdrop-blur-md' : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
@@ -143,6 +163,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
+            <ThemeToggle />
             <LangToggle />
           </div>
 
@@ -157,6 +178,7 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
+            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-neutral-500 hover:text-white transition-colors"
@@ -189,15 +211,15 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
           >
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
             <motion.div
-              className="absolute right-0 top-0 bottom-0 w-64 bg-[#0a0a0a] border-l border-neutral-800 flex flex-col"
+              className="absolute right-0 top-0 bottom-0 w-64 bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-white border-l border-neutral-800 dark:border-neutral-800 light:border-neutral-200 flex flex-col"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             >
-              <div className="p-4 border-b border-neutral-900 flex items-center justify-between">
-                <span className="text-sm font-medium text-white">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-neutral-500 hover:text-white">
+              <div className="p-4 border-b border-neutral-900 dark:border-neutral-900 light:border-neutral-200 flex items-center justify-between">
+                <span className="text-sm font-medium text-white dark:text-white light:text-neutral-900">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900">
                   <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -209,14 +231,15 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
                     key={link.id}
                     onClick={() => { scrollToSection(link.id); setMobileMenuOpen(false) }}
                     className={`text-left w-full py-2 text-sm transition-colors ${
-                      activeSection === link.id ? 'text-white' : 'text-neutral-400 hover:text-white'
+                      activeSection === link.id ? 'text-white dark:text-white light:text-neutral-900' : 'text-neutral-400 dark:text-neutral-400 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900'
                     }`}
                   >
                     {link.name}
                   </button>
                 ))}
               </nav>
-              <div className="p-4 border-t border-neutral-900">
+              <div className="p-4 border-t border-neutral-900 dark:border-neutral-900 light:border-neutral-200 flex items-center gap-4">
+                <ThemeToggle />
                 <LangToggle />
               </div>
             </motion.div>

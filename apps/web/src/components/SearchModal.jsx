@@ -74,7 +74,7 @@ export default function SearchModal({ isOpen, onClose, lang = 'en' }) {
             transition={{ duration: 0.2 }}
           >
             <motion.div
-              className="w-full max-w-2xl bg-[#0a0a0a] border border-neutral-800 overflow-hidden"
+              className="w-full max-w-2xl bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-white border border-neutral-800 dark:border-neutral-800 light:border-neutral-200 overflow-hidden"
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
@@ -82,19 +82,19 @@ export default function SearchModal({ isOpen, onClose, lang = 'en' }) {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Search Input */}
-              <div className="p-4 border-b border-neutral-900">
+              <div className="p-4 border-b border-neutral-900 dark:border-neutral-900 light:border-neutral-200">
                 <div className="relative">
                   <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search projects..."
-                    className="w-full bg-neutral-900 border border-neutral-800 text-white text-lg px-4 py-3 pr-12 focus:outline-none focus:border-neutral-600 transition-colors placeholder-neutral-600"
+                    className="w-full bg-neutral-900 dark:bg-neutral-900 light:bg-gray-100 border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 text-white dark:text-white light:text-neutral-900 text-lg px-4 py-3 pr-12 focus:outline-none focus:border-neutral-600 dark:focus:border-neutral-600 light:focus:border-neutral-400 transition-colors placeholder-neutral-600 dark:placeholder-neutral-600 light:placeholder-neutral-400"
                     autoFocus
                   />
                   <button
                     onClick={onClose}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900 transition-colors"
                   >
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -107,15 +107,15 @@ export default function SearchModal({ isOpen, onClose, lang = 'en' }) {
               <div className="max-h-[60vh] overflow-y-auto">
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
-                    <div className="w-5 h-5 border border-neutral-700 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border border-neutral-700 dark:border-neutral-700 light:border-neutral-300 border-t-white dark:border-t-white light:border-neutral-900 rounded-full animate-spin" />
                   </div>
                 ) : query.length < 2 ? (
                   <div className="p-8 text-center">
-                    <p className="text-sm text-neutral-500">Type at least 2 characters to search</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-500 light:text-neutral-600">Type at least 2 characters to search</p>
                   </div>
                 ) : results.length === 0 ? (
                   <div className="p-8 text-center">
-                    <p className="text-sm text-neutral-500">No results found for "{query}"</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-500 light:text-neutral-600">No results found for "{query}"</p>
                   </div>
                 ) : (
                   <div>
@@ -129,18 +129,18 @@ export default function SearchModal({ isOpen, onClose, lang = 'en' }) {
                           onClose()
                           window.location.hash = 'works'
                         }}
-                        className="flex items-center gap-4 p-4 border-b border-neutral-900 hover:bg-neutral-900/50 transition-colors"
+                        className="flex items-center gap-4 p-4 border-b border-neutral-900 dark:border-neutral-900 light:border-neutral-200 hover:bg-neutral-900/50 dark:hover:bg-neutral-900/50 light:hover:bg-gray-100 transition-colors"
                       >
                         {project.coverImage && (
-                          <div className="w-16 h-12 flex-shrink-0 bg-neutral-900 overflow-hidden">
+                          <div className="w-16 h-12 flex-shrink-0 bg-neutral-900 dark:bg-neutral-900 light:bg-gray-200 overflow-hidden">
                             <img src={project.coverImage} alt="" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{project.title}</p>
-                          <p className="text-xs text-neutral-500 truncate">{project.category}</p>
+                          <p className="text-sm font-medium text-white dark:text-white light:text-neutral-900 truncate">{project.title}</p>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-500 light:text-neutral-600 truncate">{project.category}</p>
                         </div>
-                        <svg className="w-4 h-4 text-neutral-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4 text-neutral-600 dark:text-neutral-600 light:text-neutral-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                         </svg>
                       </a>

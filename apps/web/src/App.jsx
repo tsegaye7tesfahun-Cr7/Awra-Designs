@@ -6,6 +6,7 @@ import Cursor from './components/Cursor'
 import FloatingCTA from './components/FloatingCTA'
 import LazySection from './components/LazySection'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
+import { ThemeProvider } from './context/ThemeContext'
 import { throttle } from './utils/throttle'
 
 const Portfolio    = lazy(() => import('./components/Portfolio'))
@@ -37,29 +38,31 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-[72px] lg:pb-0">
-      <Cursor />
-      <ProgressBar />
-      <PWAInstallPrompt lang={lang} />
-      <FloatingCTA lang={lang} />
-      <Navbar isScrolled={isScrolled} lang={lang} setLang={setLang} />
-      <Hero lang={lang} />
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <Portfolio lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <About lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <Testimonials lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <Contact lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <Footer lang={lang} />
-      </LazySection>
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-gray-50 pb-[72px] lg:pb-0 text-white dark:text-white light:text-neutral-900">
+        <Cursor />
+        <ProgressBar />
+        <PWAInstallPrompt lang={lang} />
+        <FloatingCTA lang={lang} />
+        <Navbar isScrolled={isScrolled} lang={lang} setLang={setLang} />
+        <Hero lang={lang} />
+        <LazySection fallback={<SectionFallback />} rootMargin="300px">
+          <Portfolio lang={lang} />
+        </LazySection>
+        <LazySection fallback={<SectionFallback />} rootMargin="300px">
+          <About lang={lang} />
+        </LazySection>
+        <LazySection fallback={<SectionFallback />} rootMargin="300px">
+          <Testimonials lang={lang} />
+        </LazySection>
+        <LazySection fallback={<SectionFallback />} rootMargin="300px">
+          <Contact lang={lang} />
+        </LazySection>
+        <LazySection fallback={<SectionFallback />} rootMargin="300px">
+          <Footer lang={lang} />
+        </LazySection>
+      </div>
+    </ThemeProvider>
   )
 }
 
