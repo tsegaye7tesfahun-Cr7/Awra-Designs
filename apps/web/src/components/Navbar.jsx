@@ -14,6 +14,7 @@ const ALL_SECTIONS = ['home', 'works', 'about', 'testimonials', 'contact']
 const Navbar = ({ isScrolled, lang, setLang }) => {
   const [activeSection, setActiveSection] = useState('home')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -145,9 +146,8 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
             <LangToggle />
           </div>
 
-          {/* ── Mobile nav (< md): shortened links ───────────────────────── */}
+          {/* ── Mobile nav (< md): hamburger menu ───────────────────────── */}
           <div className="flex md:hidden items-center gap-3 xs:gap-4 flex-shrink-0">
-            {mobileLinks.map(link => <NavLink key={link.id} link={link} />)}
             <button
               onClick={() => setSearchOpen(true)}
               className="text-neutral-500 hover:text-white transition-colors"
@@ -157,11 +157,72 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-neutral-500 hover:text-white transition-colors"
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? (
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
             <LangToggle />
           </div>
 
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+            <motion.div
+              className="absolute right-0 top-0 bottom-0 w-64 bg-[#0a0a0a] border-l border-neutral-800 flex flex-col"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            >
+              <div className="p-4 border-b border-neutral-900 flex items-center justify-between">
+                <span className="text-sm font-medium text-white">Menu</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="text-neutral-500 hover:text-white">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <nav className="flex-1 p-4 space-y-4">
+                {mobileLinks.map(link => (
+                  <button
+                    key={link.id}
+                    onClick={() => { scrollToSection(link.id); setMobileMenuOpen(false) }}
+                    className={`text-left w-full py-2 text-sm transition-colors ${
+                      activeSection === link.id ? 'text-white' : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    {link.name}
+                  </button>
+                ))}
+              </nav>
+              <div className="p-4 border-t border-neutral-900">
+                <LangToggle />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Search Modal */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} lang={lang} />

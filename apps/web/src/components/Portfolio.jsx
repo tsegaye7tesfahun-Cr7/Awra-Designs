@@ -569,6 +569,14 @@ export default function Portfolio({ lang = 'en' }) {
         )}
       </AnimatePresence>
       <PortfolioCursor visible={cursorVisible} />
+      
+      {/* Project Detail Modal */}
+      <ProjectDetailModal 
+        isOpen={detailModalOpen} 
+        onClose={closeDetailModal} 
+        projectId={detailProjectId} 
+        lang={lang} 
+      />
     </section>
   )
 }

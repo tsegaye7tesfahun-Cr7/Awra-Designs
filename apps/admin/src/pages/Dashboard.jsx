@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { timeAgo } from '../lib/timeAgo'
 import PageHeader from '../components/PageHeader'
 import BarChart from '../components/BarChart'
+import Skeleton, { CardSkeleton, TableSkeleton } from '../components/Skeleton'
 
 function StatCard({ label, value, sub, to, accent }) {
   const inner = (
@@ -54,12 +55,18 @@ export default function Dashboard() {
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-900">
-          <StatCard label="Total Projects"     value={stats?.projects.total}       sub={`${stats?.projects.published ?? '—'} published`}  to="/projects" />
-          <StatCard label="Featured Projects"  value={stats?.projects.featured}    sub="marked as featured"                                to="/projects" />
-          <StatCard label="Blog Posts"         value={stats?.blog.total}           sub={`${stats?.blog.published ?? '—'} published`}       to="/blog" />
-          <StatCard label="Testimonials"       value={stats?.testimonials.total}   sub={`${stats?.testimonials.published ?? '—'} published`} to="/testimonials" />
-        </div>
+        {!stats ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-900">
+            {[1,2,3,4].map(i => <CardSkeleton key={i} />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-900">
+            <StatCard label="Total Projects"     value={stats?.projects.total}       sub={`${stats?.projects.published ?? '—'} published`}  to="/projects" />
+            <StatCard label="Featured Projects"  value={stats?.projects.featured}    sub="marked as featured"                                to="/projects" />
+            <StatCard label="Blog Posts"         value={stats?.blog.total}           sub={`${stats?.blog.published ?? '—'} published`}       to="/blog" />
+            <StatCard label="Testimonials"       value={stats?.testimonials.total}   sub={`${stats?.testimonials.published ?? '—'} published`} to="/testimonials" />
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-neutral-900">
           <StatCard label="Total Messages"     value={stats?.messages.total}       sub="in inbox"                                          to="/messages" />
           <StatCard label="Unread Messages"    value={stats?.messages.unread}      sub="awaiting response"                                 to="/messages" accent={stats?.messages.unread > 0} />
@@ -129,20 +136,22 @@ export default function Dashboard() {
               <p className="text-[10px] uppercase tracking-widest text-neutral-600">Recent Messages</p>
               <Link to="/messages" className="text-[10px] text-neutral-500 hover:text-white">View all →</Link>
             </div>
-            <div className="space-y-1">
-              {recent.messages.length === 0 ? (
-                <p className="text-xs text-neutral-700 py-4 text-center">No messages</p>
-              ) : recent.messages.map(m => (
-                <button key={m.id} onClick={() => navigate('/messages')}
-                  className="w-full text-left px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className={`text-xs truncate ${!m.isRead ? 'text-white font-medium' : 'text-neutral-400'}`}>{m.name}</p>
-                    <span className="text-[9px] text-neutral-700 flex-shrink-0">{timeAgo(m.createdAt)}</span>
-                  </div>
-                  <p className="text-[10px] text-neutral-600 truncate mt-0.5">{m.subject || m.message}</p>
-                </button>
-              ))}
-            </div>
+            {!recent.messages.length ? (
+              <div className="text-xs text-neutral-700 py-4 text-center">No messages</div>
+            ) : (
+              <div className="space-y-1">
+                {recent.messages.map(m => (
+                  <button key={m.id} onClick={() => navigate('/messages')}
+                    className="w-full text-left px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`text-xs truncate ${!m.isRead ? 'text-white font-medium' : 'text-neutral-400'}`}>{m.name}</p>
+                      <span className="text-[9px] text-neutral-700 flex-shrink-0">{timeAgo(m.createdAt)}</span>
+                    </div>
+                    <p className="text-[10px] text-neutral-600 truncate mt-0.5">{m.subject || m.message}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent projects */}
@@ -151,24 +160,26 @@ export default function Dashboard() {
               <p className="text-[10px] uppercase tracking-widest text-neutral-600">Recent Projects</p>
               <Link to="/projects" className="text-[10px] text-neutral-500 hover:text-white">View all →</Link>
             </div>
-            <div className="space-y-1">
-              {recent.projects.length === 0 ? (
-                <p className="text-xs text-neutral-700 py-4 text-center">No projects</p>
-              ) : recent.projects.map(p => (
-                <Link key={p.id} to={`/projects/${p.id}`}
-                  className="flex items-center gap-3 px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
-                  {p.coverImage && (
-                    <div className="w-8 h-6 flex-shrink-0 bg-neutral-900 overflow-hidden">
-                      <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+            {!recent.projects.length ? (
+              <div className="text-xs text-neutral-700 py-4 text-center">No projects</div>
+            ) : (
+              <div className="space-y-1">
+                {recent.projects.map(p => (
+                  <Link key={p.id} to={`/projects/${p.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
+                    {p.coverImage && (
+                      <div className="w-8 h-6 flex-shrink-0 bg-neutral-900 overflow-hidden">
+                        <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white truncate">{p.title}</p>
+                      <p className="text-[10px] text-neutral-600">{timeAgo(p.updatedAt)}</p>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white truncate">{p.title}</p>
-                    <p className="text-[10px] text-neutral-600">{timeAgo(p.updatedAt)}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent blog posts */}
@@ -177,24 +188,26 @@ export default function Dashboard() {
               <p className="text-[10px] uppercase tracking-widest text-neutral-600">Recent Posts</p>
               <Link to="/blog" className="text-[10px] text-neutral-500 hover:text-white">View all →</Link>
             </div>
-            <div className="space-y-1">
-              {recent.posts.length === 0 ? (
-                <p className="text-xs text-neutral-700 py-4 text-center">No posts</p>
-              ) : recent.posts.map(p => (
-                <Link key={p.id} to={`/blog/${p.id}`}
-                  className="flex items-center gap-3 px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white truncate">{p.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[9px] ${p.isPublished ? 'text-green-600' : 'text-neutral-600'}`}>
-                        {p.isPublished ? 'Published' : 'Draft'}
-                      </span>
-                      <span className="text-[9px] text-neutral-700">{timeAgo(p.updatedAt)}</span>
+            {!recent.posts.length ? (
+              <div className="text-xs text-neutral-700 py-4 text-center">No posts</div>
+            ) : (
+              <div className="space-y-1">
+                {recent.posts.map(p => (
+                  <Link key={p.id} to={`/blog/${p.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 border border-neutral-900 hover:border-neutral-700 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white truncate">{p.title}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-[9px] ${p.isPublished ? 'text-green-600' : 'text-neutral-600'}`}>
+                          {p.isPublished ? 'Published' : 'Draft'}
+                        </span>
+                        <span className="text-[9px] text-neutral-700">{timeAgo(p.updatedAt)}</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
