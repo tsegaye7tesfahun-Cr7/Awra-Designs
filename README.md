@@ -1,126 +1,188 @@
-# Awra Designs - Premium Website
+# Awra Designs Monorepo
 
-A world-class, modern React + Vite website for Awra Finishing & Interior - Professional Architecture & Design services in Addis Ababa, Ethiopia.
+A production-ready monorepo for the Awra Designs architecture and interior design platform, containing the frontend website, backend API, and admin dashboard.
 
-## ✨ Features
-
-- **Modern Design**: Beautiful, elegant UI with smooth animations
-- **Fully Responsive**: Perfect on all devices - mobile, tablet, desktop
-- **Performance Optimized**: Fast loading with lazy loading and code splitting
-- **Smooth Animations**: Framer Motion animations throughout
-- **Interactive Portfolio**: Gallery with lightbox and category filtering
-- **Contact Form**: Modern form with validation
-- **SEO Optimized**: Complete meta tags and structured data
-- **Accessibility**: ARIA labels and keyboard navigation
-- **Modern Stack**: React 18, Vite, Tailwind CSS, Framer Motion
-
-## 🚀 Quick Start
-
-### Development
-
-```bash
-npm install
-npm run dev
-```
-
-The site will open at `http://localhost:8000`
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-The production files will be in the `dist` folder.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 awra-designs/
-├── public/
-│   ├── images/          # All image assets
-│   └── manifest.webmanifest
-├── src/
-│   ├── components/      # React components
-│   │   ├── Navbar.jsx
-│   │   ├── Hero.jsx
-│   │   ├── Services.jsx
-│   │   ├── Portfolio.jsx
-│   │   ├── Team.jsx
-│   │   ├── Contact.jsx
-│   │   └── Footer.jsx
-│   ├── App.jsx         # Main app component
-│   ├── main.jsx        # Entry point
-│   └── index.css       # Global styles
-├── index.html
-├── package.json
-├── vite.config.js
-└── tailwind.config.js
+├── apps/
+│   ├── web/              # Frontend website (React + Vite)
+│   ├── api/              # Backend API (Express + TypeScript + Prisma)
+│   └── admin/            # Admin dashboard (React + Vite)
+├── package.json          # Root package.json with workspaces
+├── .gitignore
+└── README.md
 ```
 
-## 🎨 Sections
+## Applications
 
-1. **Hero Section**: Stunning full-screen hero with call-to-action buttons
-2. **Services**: Four main services with feature lists
-3. **Portfolio**: Interactive gallery with category filtering and lightbox
-4. **Team**: Meet the expert team members
-5. **Contact**: Contact form and information
-6. **Footer**: Links, social media, and company info
+### Web (Frontend)
+- **Tech Stack**: React 18, Vite, Tailwind CSS, Framer Motion
+- **Port**: 5173 (dev)
+- **Features**: Public website with portfolio, blog, contact forms, PWA support, premium architecture interactions
+- **Deployment**: Netlify - https://awradesigns.netlify.app/
 
-## 🛠️ Tech Stack
+### API (Backend)
+- **Tech Stack**: Express, TypeScript, Prisma ORM
+- **Port**: 5000
+- **Features**: REST API, authentication, content management, file uploads, analytics tracking
 
-- **React 18**: Latest React with hooks
-- **Vite**: Fast build tool and dev server
-- **Tailwind CSS**: Utility-first CSS framework
-- **Framer Motion**: Beautiful animations
-- **React Intersection Observer**: Scroll animations
-- **Three.js**: For 3D elements (if needed)
+### Admin (Admin Dashboard)
+- **Tech Stack**: React 18, Vite, Tailwind CSS, TipTap editor
+- **Port**: 5174 (dev)
+- **Features**: Content management, media library, project management, rich text editor, SEO preview
+- **Deployment**: Netlify - https://awra-admin.netlify.app/
 
-## 📱 Responsive Design
+## Prerequisites
 
-Fully responsive with breakpoints:
-- Mobile: < 640px
-- Tablet: 640px - 1024px
-- Desktop: > 1024px
+- Node.js 20 or higher
+- npm or yarn
+- PostgreSQL database (for backend)
 
-## 🎯 Performance Features
+## Installation
 
-- Lazy loading images
-- Code splitting
-- Optimized bundle sizes
-- Fast page loads
-- Smooth scrolling
-- Efficient animations
+1. Clone the repository:
+```bash
+git clone https://github.com/bereketfikre2021-sudo/awradesigns.git
+cd awra-designs
+```
 
-## 🌐 Browser Support
+2. Install dependencies (per app):
+```bash
+cd apps/web && npm install --legacy-peer-deps
+cd ../api && npm install
+cd ../admin && npm install
+```
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+## Development
 
-## 📝 Notes
+### Run all applications (requires 3 terminals):
 
-- All images and text content are preserved from the original site
-- Modern design with improved UX/UI
-- Smooth animations and transitions throughout
-- Professional color scheme with gold accent
-- Accessible and SEO-friendly
+**Terminal 1 - Frontend:**
+```bash
+cd apps/web
+npm run dev
+```
 
-## 📞 Contact Information
+**Terminal 2 - Backend:**
+```bash
+cd apps/api
+npm run dev
+```
 
-- **Phone**: +251-92-381-4125
-- **Location**: Addis Ababa, Ethiopia
-- **Email**: info@awradesigns.com
+**Terminal 3 - Admin:**
+```bash
+cd apps/admin
+npm run dev
+```
 
----
+### Access URLs:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:5000
+- **Admin**: http://localhost:5174
 
-**Original Site**: https://awradesigns.netlify.app/
+## Environment Variables
 
-Built with ❤️ using React + Vite
+Each application has its own `.env` file:
+
+- `apps/web/.env` - Frontend environment variables
+- `apps/api/.env` - Backend environment variables (requires DATABASE_URL)
+- `apps/admin/.env` - Admin environment variables
+
+Example for backend (`apps/api/.env`):
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/database"
+JWT_SECRET="your-secret-key"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+NODE_ENV=development
+PORT=5000
+```
+
+## Database Setup (Backend)
+
+The backend uses Prisma ORM. Set up your database:
+
+1. Configure your database connection in `apps/api/.env`
+2. Run migrations:
+```bash
+cd apps/api
+npm run prisma:generate
+```
+
+3. (Optional) Seed the database:
+```bash
+npm run seed
+```
+
+## Building
+
+Build each application individually:
+
+**Frontend:**
+```bash
+cd apps/web
+npm run build
+```
+
+**Backend:**
+```bash
+cd apps/api
+npm run build
+```
+
+**Admin:**
+```bash
+cd apps/admin
+npm run build
+```
+
+## Deployment
+
+### Frontend (Web)
+- Build output: `apps/web/dist/`
+- Deploy to Netlify (already configured)
+
+### Backend (API)
+- Build output: `apps/api/dist/`
+- Deploy to Render (already configured at https://awra-designs-backend.onrender.com)
+
+### Admin (Admin Dashboard)
+- Build output: `apps/admin/dist/`
+- Deploy to Netlify (already configured)
+
+## Development Notes
+
+- All applications use relative imports within their own directories
+- Frontend and Admin proxy API requests to the backend in development
+- Each application can be developed and deployed independently
+- Shared utilities can be added to a `packages/shared` directory if needed
+
+## Troubleshooting
+
+**Kill all running Node processes:**
+```powershell
+taskkill //F //IM node.exe
+```
+
+**Dependency issues:**
+```bash
+rm -rf node_modules apps/*/node_modules
+cd apps/web && npm install --legacy-peer-deps
+cd ../api && npm install
+cd ../admin && npm install
+```
+
+**Build issues:**
+- Ensure Node.js version is 20 or higher
+- Clear build folders: `rm -rf apps/*/dist apps/*/dev-dist`
+
+**Database issues:**
+- Check Prisma schema: `cd apps/api && npx prisma studio`
+- Regenerate Prisma client: `cd apps/api && npm run prisma:generate`
+
+## License
+
+ISC

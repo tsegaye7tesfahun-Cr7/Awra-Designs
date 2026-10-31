@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String   @default("Admin")
+  role      String   @default("admin")   // "admin" | "editor"
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Project {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  category         String
+  filter           String
+  shortDescription String
+  description      String
+  coverImage       String
+  galleryImages    String[] @default([])
+  client           String?
+  year             String
+  type             String
+  services         String[] @default([])
+  isFeatured       Boolean  @default(false)
+  isPublished      Boolean  @default(false)
+  order            Int      @default(0)
+  seoTitle         String?
+  seoDesc          String?
+  scheduledAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([category])
+  @@map("projects")
+}
+
+model About {
+  id          String   @id @default(uuid())
+  headline1   String
+  headline2   String
+  tagline     String
+  mission     String?
+  vision      String?
+  values      String[] @default([])
+  stats       Json?
+  imageUrl    String?
+  slideImages String[] @default([])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teamMembers TeamMember[]
+
+  @@map("about")
+}
+
+model TeamMember {
+  id       String  @id @default(uuid())
+  name     String
+  nameAm   String?
+  role     String
+  roleAm   String?
+  imageUrl String
+  order    Int     @default(0)
+  aboutId  String
+
+  about About @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+
+  @@index([aboutId])
+  @@map("team_members")
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  clientName  String
+  position    String
+  company     String?
+  text        String
+  imageUrl    String?
+  rating      Int?
+  isFeatured  Boolean  @default(false)
+  isPublished Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@map("testimonials")
+}
+
+model BlogPost {
+  id            String    @id @default(uuid())
+  title         String
+  slug          String    @unique
+  excerpt       String
+  content       String
+  coverImage    String?
+  category      String
+  tags          String[]  @default([])
+  author        String    @default("Awra Designs")
+  readTime      String?
+  isPublished   Boolean   @default(false)
+  publishedAt   DateTime?
+  scheduledAt   DateTime?
+  seoTitle      String?
+  seoDesc       String?
+  ogImage       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([isPublished])
+  @@index([category])
+  @@map("blog_posts")
+}
+
+model ContactMessage {
+  id         String   @id @default(uuid())
+  name       String
+  email      String
+  phone      String?
+  subject    String?
+  message    String
+  isRead     Boolean  @default(false)
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isRead])
+  @@index([isArchived])
+  @@map("contact_messages")
+}
+
+model FaqItem {
+  id          String   @id @default(uuid())
+  question    String
+  answer      String
+  category    String?
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished])
+  @@map("faq_items")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model ProjectGroup {
+  id            String   @id @default(uuid())
+  label         String
+  subcategories String[] @default([])
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("project_groups")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  adminId    String?
+  adminEmail String?
+  action     String   // e.g. "created", "updated", "deleted", "published", "unpublished"
+  entity     String   // e.g. "project", "blog_post", "testimonial", "faq"
+  entityId   String?
+  entityName String?
+  meta       Json?    // optional extra detail
+  createdAt  DateTime @default(now())
+
+  @@index([entity])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model PageView {
+  id           String   @id @default(uuid())
+  visitorId    String
+  sessionId    String
+  section      String?
+  projectId    String?
+  blogPostId   String?
+  referrer     String?
+  source       String?
+  country      String?
+  city         String?
+  device       String?
+  browser      String?
+  os           String?
+  language     String?
+  screenWidth  Int?
+  screenHeight Int?
+  duration     Int?
+  scrollDepth  Int?
+  isNew        Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([visitorId])
+  @@index([sessionId])
+  @@index([section])
+  @@index([createdAt])
+  @@index([source])
+  @@index([country])
+  @@map("page_views")
+}
+
+model ConversionEvent {
+  id        String   @id @default(uuid())
+  visitorId String
+  sessionId String
+  type      String
+  target    String?
+  meta      Json?
+  country   String?
+  device    String?
+  createdAt DateTime @default(now())
+
+  @@index([visitorId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("conversion_events")
+}
