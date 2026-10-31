@@ -11,8 +11,6 @@ import { throttle } from './utils/throttle'
 const Portfolio    = lazy(() => import('./components/Portfolio'))
 const About        = lazy(() => import('./components/About'))
 const Testimonials = lazy(() => import('./components/Testimonials'))
-const FAQ          = lazy(() => import('./components/FAQ'))
-const Blog         = lazy(() => import('./components/Blog'))
 const Contact      = lazy(() => import('./components/Contact'))
 const Footer       = lazy(() => import('./components/Footer'))
 const PermitCalculator = lazy(() => import('./components/PermitCalculator'))
@@ -58,12 +56,6 @@ function App() {
       </LazySection>
       <LazySection fallback={<SectionFallback />} rootMargin="300px">
         <Testimonials lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <Blog lang={lang} />
-      </LazySection>
-      <LazySection fallback={<SectionFallback />} rootMargin="300px">
-        <FAQ lang={lang} />
       </LazySection>
       <LazySection fallback={<SectionFallback />} rootMargin="300px">
         <Contact lang={lang} />

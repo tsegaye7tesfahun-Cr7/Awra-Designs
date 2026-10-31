@@ -104,7 +104,7 @@ const Hero = ({ lang = 'en' }) => {
               </AnimatePresence>
             </motion.p>
 
-            {/* CTAs — Request a Quote + Home */}
+            {/* CTAs — Request a Quote + Permit Calculator */}
             <motion.div
               className="flex flex-row flex-wrap gap-3"
               initial={{ opacity: 0, y: 16 }}
@@ -124,11 +124,14 @@ const Hero = ({ lang = 'en' }) => {
               </button>
 
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => {
+                  const el = document.getElementById('permit')
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
                 className="group inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
               >
-                {lang === 'am' ? 'መነሽ' : 'Home'}
-                <span className="transition-transform duration-300 group-hover:translate-x-1">↑</span>
+                {lang === 'am' ? 'የፍቃድ ክፍያ ማስላት' : 'Permit Calculator'}
+                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
               </button>
             </motion.div>
 
