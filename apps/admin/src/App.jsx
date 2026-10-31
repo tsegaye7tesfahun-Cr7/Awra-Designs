@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { UnreadProvider } from './context/UnreadContext'
+import ErrorBoundary from './components/ErrorBoundary'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
@@ -27,42 +28,44 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <UnreadProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/new" element={<ProjectForm />} />
-            <Route path="projects/:id" element={<ProjectForm />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="media" element={<MediaLibrary />} />
-            <Route path="activity" element={<ActivityLog />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="team" element={<Team />} />
-            <Route path="about" element={<About />} />
-            <Route path="testimonials" element={<Testimonials />} />
-            <Route path="testimonials/new" element={<TestimonialForm />} />
-            <Route path="testimonials/:id" element={<TestimonialForm />} />
-            <Route path="blog" element={<Blog />} />
-            <Route path="blog/new" element={<BlogForm />} />
-            <Route path="blog/:id" element={<BlogForm />} />
-            <Route path="faq" element={<FAQ />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-      </UnreadProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <UnreadProvider>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<ProjectForm />} />
+              <Route path="projects/:id" element={<ProjectForm />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="media" element={<MediaLibrary />} />
+              <Route path="activity" element={<ActivityLog />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="team" element={<Team />} />
+              <Route path="about" element={<About />} />
+              <Route path="testimonials" element={<Testimonials />} />
+              <Route path="testimonials/new" element={<TestimonialForm />} />
+              <Route path="testimonials/:id" element={<TestimonialForm />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="blog/new" element={<BlogForm />} />
+              <Route path="blog/:id" element={<BlogForm />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="messages" element={<Messages />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+        </UnreadProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }

@@ -25,20 +25,59 @@ export default function ImageUpload({ value, onChange, alt, onAltChange, label, 
     setError('')
     setUploading(true)
     const token = localStorage.getItem('token')
+
+    // Validate file
+    if (!file) {
+      setError('No file selected')
+      setUploading(false)
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (JPG, PNG, WEBP)')
+      setUploading(false)
+      return
+    }
+
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      setError('File too large. Maximum size is 10MB')
+      setUploading(false)
+      return
+    }
+
     const form = new FormData()
-    const compressed = await compressImage(file)
-    form.append('image', compressed)
+    try {
+      const compressed = await compressImage(file)
+      form.append('image', compressed)
+    } catch (e) {
+      setError('Failed to process image. Please try a different file.')
+      setUploading(false)
+      return
+    }
+
     try {
       const res = await fetch(`${API}/upload/single`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'Upload failed' }))
+        throw new Error(errorData.message || `Upload failed (${res.status})`)
+      }
+
       const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed')
+      if (!data.success) {
+        throw new Error(data.message || 'Upload failed')
+      }
+
       onChange(data.data.url)
     } catch (e) {
-      setError(e.message)
+      setError(e.message || 'Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }

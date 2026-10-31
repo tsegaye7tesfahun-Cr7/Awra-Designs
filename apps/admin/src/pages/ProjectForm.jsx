@@ -7,6 +7,7 @@ import Field, { Input, Textarea, Select } from '../components/Field'
 import ImageUpload from '../components/ImageUpload'
 import MultiImageUpload from '../components/MultiImageUpload'
 import SeoPreview from '../components/SeoPreview'
+import SeoChecker from '../components/SeoChecker'
 import ScheduleInput from '../components/ScheduleInput'
 import DraftBanner from '../components/DraftBanner'
 import { useToast, ToastContainer } from '../components/Toast'
@@ -268,6 +269,11 @@ export default function ProjectForm() {
               placeholder={form.shortDescription || '150-character description for search results'}
             />
           </Field>
+          <SeoChecker
+            title={form.seoTitle || form.title}
+            description={form.seoDesc || form.shortDescription}
+            slug={form.slug}
+          />
           <SeoPreview
             title={form.seoTitle || form.title}
             description={form.seoDesc || form.shortDescription}

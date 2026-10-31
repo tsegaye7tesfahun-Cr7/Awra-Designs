@@ -10,6 +10,7 @@ import { api } from '../lib/api'
 import PageHeader from '../components/PageHeader'
 import Btn from '../components/Btn'
 import SortableRow from '../components/SortableRow'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { useToast, ToastContainer } from '../components/Toast'
 import { timeAgo } from '../lib/timeAgo'
 
@@ -180,6 +181,7 @@ export default function Projects() {
   const [sheetProject, setSheetProject] = useState(null)
   const [selected, setSelected]     = useState(new Set())
   const [bulkWorking, setBulkWorking] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, onConfirm: null, title: '', message: '', variant: 'danger' })
   const { show } = useToast()
   const navigate = useNavigate()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -239,12 +241,21 @@ export default function Projects() {
   }
 
   const remove = async (id) => {
-    if (!confirm('Delete this project?')) return
-    try {
-      await api.delete(`/projects/${id}`)
-      setProjects(ps => ps.filter(p => p.id !== id))
-      show('Deleted')
-    } catch (e) { show(e.message, 'error') }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Project',
+      message: 'Are you sure you want to delete this project? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/projects/${id}`)
+          setProjects(ps => ps.filter(p => p.id !== id))
+          show('Deleted')
+        } catch (e) { show(e.message, 'error') }
+      },
+    })
   }
 
   const duplicate = async (id) => {
@@ -281,15 +292,24 @@ export default function Projects() {
   }
 
   const bulkDelete = async () => {
-    if (!confirm(`Delete ${selected.size} project(s)? This cannot be undone.`)) return
-    setBulkWorking(true)
-    try {
-      await Promise.all([...selected].map(id => api.delete(`/projects/${id}`)))
-      setProjects(ps => ps.filter(p => !selected.has(p.id)))
-      show(`${selected.size} project(s) deleted`)
-      clearSelection()
-    } catch (e) { show(e.message, 'error') }
-    finally { setBulkWorking(false) }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Selected Projects',
+      message: `Are you sure you want to delete ${selected.size} project(s)? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+      onConfirm: async () => {
+        setBulkWorking(true)
+        try {
+          await Promise.all([...selected].map(id => api.delete(`/projects/${id}`)))
+          setProjects(ps => ps.filter(p => !selected.has(p.id)))
+          show(`${selected.size} project(s) deleted`)
+          clearSelection()
+        } catch (e) { show(e.message, 'error') }
+        finally { setBulkWorking(false) }
+      },
+    })
   }
 
   return (
@@ -478,6 +498,18 @@ export default function Projects() {
         onToggleFeatured={() => sheetProject && toggle(sheetProject.id, 'isFeatured', !sheetProject.isFeatured)}
         onDuplicate={() => sheetProject && duplicate(sheetProject.id)}
         onDelete={() => sheetProject && remove(sheetProject.id)}
+      />
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        variant={confirmDialog.variant}
       />
 
       <ToastContainer />
