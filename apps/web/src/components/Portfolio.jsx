@@ -6,6 +6,7 @@ import { trackView, trackEvent } from '../lib/analytics'
 import { FloorPlanFragment, SheetRef } from './ArchDetails'
 import ProjectDetailModal from './ProjectDetailModal'
 import ProjectComparison from './ProjectComparison'
+import { useFavorites } from '../hooks/useFavorites'
 
 function getProjectId(index) {
   return `AW-${String(index + 1).padStart(3, '0')}`
@@ -167,6 +168,7 @@ export default function Portfolio({ lang = 'en' }) {
   const [showComparison, setShowComparison] = useState(false)
   const modalRef = useRef(null)
   const tx = t[lang].portfolio
+  const { favorites, toggleFavorite, isFavorite } = useFavorites()
 
   useEffect(() => {
     trackView('projects')
@@ -442,7 +444,16 @@ export default function Portfolio({ lang = 'en' }) {
                     </div>
                   </div>
                 </div>
-                <div className="hidden sm:flex flex-col items-end gap-1">
+                <div className="hidden sm:flex flex-col items-end gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(featured.id) }}
+                    className={`p-2 transition-colors ${isFavorite(featured.id) ? 'text-red-500' : 'text-neutral-600 hover:text-white'}`}
+                    aria-label={isFavorite(featured.id) ? 'Remove from favorites' : 'Add to favorites'}
+                  >
+                    <svg width="20" height="20" fill={isFavorite(featured.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
                   <span className="label-text text-neutral-400">{tx.open}</span>
                   {featured.images.length > 1 && <span className="label-text text-neutral-600">{tx.views(featured.images.length)}</span>}
                 </div>
@@ -475,6 +486,15 @@ export default function Portfolio({ lang = 'en' }) {
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[13px] md:text-sm font-medium text-white truncate">{item.title}</p>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id) }}
+                      className={`p-1.5 transition-colors ${isFavorite(item.id) ? 'text-red-500' : 'text-neutral-600 hover:text-white'}`}
+                      aria-label={isFavorite(item.id) ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <svg width="16" height="16" fill={isFavorite(item.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </button>
                     <span className="label-text">{item.year}</span>
                     <button onClick={() => openModal(item)}
                       className="label-text px-2.5 py-1 border border-neutral-800 hover:border-neutral-500 hover:text-white transition-colors whitespace-nowrap"
