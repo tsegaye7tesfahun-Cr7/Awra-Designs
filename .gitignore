@@ -34,3 +34,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# User's local files
+start-commands.txt
+start command
