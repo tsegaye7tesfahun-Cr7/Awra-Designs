@@ -1,94 +1,142 @@
 /**
- * Building Permit Fee Calculator — pure calculation logic.
- * No UI concerns. Import fee tables from permitFees.js.
+ * Ethiopian Building Permit Fee Calculator — Official Formulas
+ * Based on:
+ * - Addis Ababa Regulation No. 134/2022, Schedule 4 (Construction cost estimation rates)
+ * - Ethiopian Building Regulation No. 243/2011, Article 24 (Plan review and approval fees)
  */
 import {
-  PERMIT_FEE_TIERS,
-  SERVICE_CATEGORY_2,
-  SERVICE_CATEGORY_3,
-  BASEMENT_OPTIONS,
+  CONSTRUCTION_RATES,
+  PLANNING_CONSENT_FEE,
 } from './permitFees'
 
 /**
- * @param {object} params
- * @param {number}  params.floorCount  — positive integer (number of floors)
- * @param {'none'|'one'|'two'|'three'} params.basement
- * @param {'none'|'option_a'|'option_b'} params.serviceCategory2
- * @param {'none'|'category_3'} params.serviceCategory3
- * @returns {{ basePermitFee: number, serviceCategory2: number, serviceCategory3: number, basement: number, total: number, breakdown: object[] } | null}
+ * Calculate plan review fee based on project estimate
+ * Ethiopian Building Regulation No. 243/2011, Article 24
+ * @param {number} projectEstimate - Total project estimate in ETB
+ * @returns {number} Plan review fee in ETB
  */
-export function calculatePermitFee({ floorCount, basement, serviceCategory2, serviceCategory3 }) {
-  if (!floorCount || floorCount <= 0 || !basement || !serviceCategory2 || !serviceCategory3) return null
+function calculatePlanReviewFee(projectEstimate) {
+  if (projectEstimate <= 2_500_000) {
+    return projectEstimate / 2000
+  } else if (projectEstimate <= 5_000_000) {
+    return 1250 + (projectEstimate - 2_500_000) / 2500
+  } else if (projectEstimate <= 10_000_000) {
+    return 2250 + (projectEstimate - 5_000_000) / 3000
+  } else if (projectEstimate <= 20_000_000) {
+    return 3920 + (projectEstimate - 10_000_000) / 3500
+  } else if (projectEstimate <= 50_000_000) {
+    return 6770 + (projectEstimate - 20_000_000) / 4000
+  } else {
+    return 14270 + (projectEstimate - 50_000_000) / 5000
+  }
+}
 
-  // Validate floor count is an integer
-  if (!Number.isInteger(floorCount) || floorCount < 1) return null
+/**
+ * @param {object} params
+ * @param {'residential'|'hospital'} params.buildingUse
+ * @param {'without_rc'|'with_rc'} params.structuralClassification
+ * @param {number} params.floorArea - Total floor area in m²
+ * @param {number} params.floorCount - Number of floors above ground
+ * @param {number} params.basement - Number of basement levels (0-3)
+ * @param {boolean} params.requirePlanningConsent - Whether planning consent is required
+ * @returns {{
+ *   totalFloorArea: number,
+ *   constructionRate: number,
+ *   projectEstimate: number,
+ *   planReviewFee: number,
+ *   planApprovalFee: number,
+ *   planningConsentFee: number,
+ *   totalPayable: number,
+ *   breakdown: object[]
+ * } | null}
+ */
+export function calculatePermitFee({ buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent }) {
+  // Validate inputs
+  if (!buildingUse || !structuralClassification || !floorArea || floorArea <= 0 || floorCount < 0 || basement < 0) {
+    return null
+  }
 
-  // Validate basement selection (0-3)
-  const basementMap = { none: 0, one: 1, two: 2, three: 3 }
-  const basementLevel = basementMap[basement]
-  if (basementLevel === undefined) return null
+  // ── Total Floor Area ─────────────────────────────────────────────────────
+  const totalFloorArea = floorArea
 
-  // ── Base Permit Fee by Floor Count ───────────────────────────────────────
-  const tier = PERMIT_FEE_TIERS.find(t => floorCount <= t.maxFloors)
-  const basePermitFee = tier ? tier.fee : PERMIT_FEE_TIERS[PERMIT_FEE_TIERS.length - 1].fee
+  // ── Applicable Construction Rate per m² ───────────────────────────────────
+  const rates = CONSTRUCTION_RATES[buildingUse]
+  if (!rates) return null
 
-  // ── Service Category 2 Fee ────────────────────────────────────────────────
-  const cat2Entry = SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)
-  const cat2Fee = cat2Entry ? cat2Entry.fee : 0
+  let constructionRate
+  if (buildingUse === 'residential') {
+    // G+0 without RC footing: 10,000 ETB/m²
+    // G+1 and above: 12,200 ETB/m²
+    if (floorCount === 0 && structuralClassification === 'without_rc') {
+      constructionRate = rates.without_rc
+    } else {
+      constructionRate = rates.with_rc
+    }
+  } else {
+    // Hospital: G+0 and above: 20,000 ETB/m² (same rate regardless of classification)
+    constructionRate = rates.without_rc
+  }
 
-  // ── Service Category 3 Fee ────────────────────────────────────────────────
-  const cat3Entry = SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)
-  const cat3Fee = cat3Entry ? cat3Entry.fee : 0
+  // ── Estimated Construction Cost ───────────────────────────────────────────
+  const projectEstimate = totalFloorArea * constructionRate
 
-  // ── Basement Fee ─────────────────────────────────────────────────────────
-  const basementEntry = BASEMENT_OPTIONS.find(b => b.value === basement)
-  const basementFee = basementEntry ? basementEntry.fee : 0
+  // ── Plan Review Fee (Progressive Formula) ─────────────────────────────────
+  const planReviewFee = calculatePlanReviewFee(projectEstimate)
 
-  // ── Calculate Total ─────────────────────────────────────────────────────
-  const total = basePermitFee + cat2Fee + cat3Fee + basementFee
+  // ── Plan Approval Fee ───────────────────────────────────────────────────────
+  const planApprovalFee = planReviewFee * 0.10
 
-  // ── Build Breakdown for Display ─────────────────────────────────────────
+  // ── Planning Consent Fee ───────────────────────────────────────────────────
+  const planningConsentFee = requirePlanningConsent ? PLANNING_CONSENT_FEE : 0
+
+  // ── Total Payable ─────────────────────────────────────────────────────────
+  const totalPayable = planReviewFee + planApprovalFee + planningConsentFee
+
+  // ── Build Breakdown for Display ─────────────────────────────────────────────
   const breakdown = []
-  breakdown.push({ label: 'Base Permit Fee', amount: basePermitFee, description: `Building with ${floorCount} floor(s)` })
-  if (cat2Fee > 0) {
-    breakdown.push({ label: 'Service Category 2', amount: cat2Fee, description: cat2Entry?.label || 'Additional service' })
-  }
-  if (cat3Fee > 0) {
-    breakdown.push({ label: 'Service Category 3', amount: cat3Fee, description: cat3Entry?.label || 'Additional service' })
-  }
-  if (basementFee > 0) {
-    breakdown.push({ label: 'Basement Fee', amount: basementFee, description: `${basementLevel} basement level(s)` })
+  breakdown.push({ label: 'Total Floor Area', amount: totalFloorArea, description: `${totalFloorArea.toLocaleString('en-US')} m²` })
+  breakdown.push({ label: 'Construction Rate', amount: constructionRate, description: `${constructionRate.toLocaleString('en-US')} ETB/m²` })
+  breakdown.push({ label: 'Estimated Construction Cost', amount: projectEstimate, description: 'Based on approved rate' })
+  breakdown.push({ label: 'Plan Review Fee', amount: planReviewFee, description: 'Per Article 24, Building Regulation No. 243/2011' })
+  breakdown.push({ label: 'Plan Approval Fee', amount: planApprovalFee, description: '10% of plan review fee' })
+  if (planningConsentFee > 0) {
+    breakdown.push({ label: 'Planning Consent Fee', amount: planningConsentFee, description: 'When applicable' })
   }
 
   return {
-    basePermitFee,
-    serviceCategory2: cat2Fee,
-    serviceCategory3: cat3Fee,
-    basement: basementFee,
-    total,
+    totalFloorArea,
+    constructionRate,
+    projectEstimate,
+    planReviewFee,
+    planApprovalFee,
+    planningConsentFee,
+    totalPayable,
     breakdown,
   }
 }
 
 /** Format a number as ETB currency string */
 export function formatETB(amount) {
-  return `ETB ${amount.toLocaleString('en-US')}`
+  return `ETB ${Math.round(amount).toLocaleString('en-US')}`
 }
 
 /** Generate a printable summary object */
 export function generateCalculationSummary(params, result) {
-  const { floorCount, basement, serviceCategory2, serviceCategory3 } = params
+  const { buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent } = params
 
   return {
     date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-    referenceCode: `BLD-${String(floorCount).padStart(2,'0')}-${Math.floor(Math.random() * 9000) + 1000}`,
+    referenceCode: `BLD-${String(floorArea).padStart(4,'0')}-${Math.floor(Math.random() * 9000) + 1000}`,
+    buildingUse: buildingUse.charAt(0).toUpperCase() + buildingUse.slice(1),
+    structuralClassification: structuralClassification === 'without_rc' ? 'Without RC Footing' : 'With RC Footing',
+    totalFloorArea: result.totalFloorArea,
     floorCount,
-    basementLevel: basement === 'none' ? 0 : { one: 1, two: 2, three: 3 }[basement],
-    serviceCategory2: serviceCategory2 === 'none' ? 'None' : SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)?.label,
-    serviceCategory3: serviceCategory3 === 'none' ? 'None' : SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)?.label,
+    basement,
+    constructionRate: result.constructionRate,
+    projectEstimate: result.projectEstimate,
     breakdown: result.breakdown,
-    total: result.total,
-    source: 'Addis Ababa Building Permit Fee Schedule (2017 E.C.)',
-    disclaimer: 'This is an estimate only. Not an official government payment receipt.',
+    totalPayable: result.totalPayable,
+    source: 'Addis Ababa Regulation No. 134/2022, Schedule 4 and Ethiopian Building Regulation No. 243/2011, Article 24',
+    disclaimer: 'This estimate is based on official Ethiopian and Addis Ababa building permit fee regulations. It is provided for guidance only and is not an official government payment receipt.',
   }
 }

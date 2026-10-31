@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { SERVICE_CATEGORY_2, SERVICE_CATEGORY_3, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { BUILDING_USES, STRUCTURAL_CLASSIFICATIONS, FLOOR_COUNTS, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
 import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
 import t from '../utils/translations'
@@ -116,45 +116,67 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
   const tx = t[lang].permit
 
   // Form state
-  const [floorCount,         setFloorCount]         = useState('')
-  const [basement,           setBasement]           = useState('none')
-  const [serviceCategory2,  setServiceCategory2]  = useState('none')
-  const [serviceCategory3,  setServiceCategory3]  = useState('none')
-  const [errors,             setErrors]             = useState({})
-  const [result,             setResult]             = useState(null)
-  const [calculated,         setCalculated]         = useState(false)
+  const [buildingUse,           setBuildingUse]           = useState('residential')
+  const [structuralClassification, setStructuralClassification] = useState('without_rc')
+  const [floorArea,              setFloorArea]              = useState('')
+  const [floorCount,             setFloorCount]             = useState('0')
+  const [basement,               setBasement]               = useState('0')
+  const [requirePlanningConsent, setRequirePlanningConsent] = useState(false)
+  const [errors,                 setErrors]                 = useState({})
+  const [result,                 setResult]                 = useState(null)
+  const [calculated,             setCalculated]             = useState(false)
 
   // Live calculation whenever inputs change
   useEffect(() => {
     if (!calculated) return
+    const area = parseFloat(floorArea)
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ floorCount: floors, basement, serviceCategory2, serviceCategory3 })
+    const basements = parseInt(basement, 10)
+    const res = calculatePermitFee({ 
+      buildingUse, 
+      structuralClassification, 
+      floorArea: area, 
+      floorCount: floors, 
+      basement: basements, 
+      requirePlanningConsent 
+    })
     setResult(res)
-  }, [floorCount, basement, serviceCategory2, serviceCategory3, calculated])
+  }, [buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent, calculated])
 
   const validate = useCallback(() => {
     const e = {}
-    const floors = parseInt(floorCount, 10)
-    if (!floorCount || isNaN(floors) || floors < 1 || !Number.isInteger(floors)) {
-      e.floorCount = lang === 'am' ? 'የሚስማማ የፎቅ ቁጥር ያስገቡ' : 'Enter a valid number of floors (1 or more)'
+    const area = parseFloat(floorArea)
+    if (!floorArea || isNaN(area) || area <= 0) {
+      e.floorArea = lang === 'am' ? 'የሚስማማ ቦፍስ ቁጥር ያስግብ' : 'Enter a valid floor area (m²)'
     }
     setErrors(e)
     return Object.keys(e).length === 0
-  }, [floorCount, lang])
+  }, [floorArea, lang])
 
   const handleCalculate = () => {
     if (!validate()) return
+    const area = parseFloat(floorArea)
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ floorCount: floors, basement, serviceCategory2, serviceCategory3 })
+    const basements = parseInt(basement, 10)
+    const res = calculatePermitFee({ 
+      buildingUse, 
+      structuralClassification, 
+      floorArea: area, 
+      floorCount: floors, 
+      basement: basements, 
+      requirePlanningConsent 
+    })
     setResult(res)
     setCalculated(true)
   }
 
   const handleReset = () => {
-    setFloorCount('')
-    setBasement('none')
-    setServiceCategory2('none')
-    setServiceCategory3('none')
+    setBuildingUse('residential')
+    setStructuralClassification('without_rc')
+    setFloorArea('')
+    setFloorCount('0')
+    setBasement('0')
+    setRequirePlanningConsent(false)
     setErrors({})
     setResult(null)
     setCalculated(false)
@@ -163,7 +185,7 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
   const handlePrint = () => {
     if (!result) return
     const summary = generateCalculationSummary(
-      { floorCount: parseInt(floorCount, 10), basement, serviceCategory2, serviceCategory3 },
+      { buildingUse, structuralClassification, floorArea: parseFloat(floorArea), floorCount: parseInt(floorCount, 10), basement: parseInt(basement, 10), requirePlanningConsent },
       result
     )
     const printWindow = window.open('', '_blank')
@@ -190,20 +212,23 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
             <p><span class="label">Date:</span> <span class="value">${summary.date}</span></p>
           </div>
           <div class="section">
-            <p><span class="label">Number of Floors:</span> <span class="value">${summary.floorCount}</span></p>
-            <p><span class="label">Basement Levels:</span> <span class="value">${summary.basementLevel}</span></p>
-            <p><span class="label">Service Category 2:</span> <span class="value">${summary.serviceCategory2}</span></p>
-            <p><span class="label">Service Category 3:</span> <span class="value">${summary.serviceCategory3}</span></p>
+            <p><span class="label">Building Use:</span> <span class="value">${summary.buildingUse}</span></p>
+            <p><span class="label">Structural Classification:</span> <span class="value">${summary.structuralClassification}</span></p>
+            <p><span class="label">Total Floor Area:</span> <span class="value">${summary.totalFloorArea.toLocaleString('en-US')} m²</span></p>
+            <p><span class="label">Floor Count:</span> <span class="value">${summary.floorCount}</span></p>
+            <p><span class="label">Basement Levels:</span> <span class="value">${summary.basement}</span></p>
+            <p><span class="label">Construction Rate:</span> <span class="value">${summary.constructionRate.toLocaleString('en-US')} ETB/m²</span></p>
+            <p><span class="label">Estimated Construction Cost:</span> <span class="value">ETB ${summary.projectEstimate.toLocaleString('en-US')}</span></p>
           </div>
           <div class="section">
             <h2>Fee Breakdown</h2>
             ${summary.breakdown.map(item => `
               <div class="row">
                 <span>${item.label}</span>
-                <span>ETB ${item.amount.toLocaleString('en-US')}</span>
+                <span>${item.amount.toLocaleString('en-US')}</span>
               </div>
             `).join('')}
-            <div class="total">Total: ETB ${summary.total.toLocaleString('en-US')}</div>
+            <div class="total">Total Payable: ETB ${summary.totalPayable.toLocaleString('en-US')}</div>
           </div>
           <div class="disclaimer">
             <p><strong>Source:</strong> ${summary.source}</p>
@@ -219,24 +244,25 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
   const handleConsultation = () => {
     // Build prefill message
     const lines = result ? [
-      `Number of Floors: ${floorCount}`,
-      `Basement: ${BASEMENT_OPTIONS.find(b => b.value === basement)?.label}`,
-      `Service Category 2: ${SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)?.label}`,
-      `Service Category 3: ${SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)?.label}`,
+      `Building Use: ${BUILDING_USES.find(b => b.value === buildingUse)?.label}`,
+      `Structural Classification: ${STRUCTURAL_CLASSIFICATIONS.find(s => s.value === structuralClassification)?.label}`,
+      `Total Floor Area: ${floorArea} m²`,
+      `Floor Count: ${floorCount}`,
+      `Basement Levels: ${basement}`,
       ``,
-      `Estimated Fees:`,
-      `  Base Permit Fee: ${formatETB(result.basePermitFee)}`,
-      `  Service Category 2: ${formatETB(result.serviceCategory2)}`,
-      `  Service Category 3: ${formatETB(result.serviceCategory3)}`,
-      `  Basement Fee: ${formatETB(result.basement)}`,
-      `  Total Estimated Cost: ${formatETB(result.total)}`,
-    ].join('\n') : ''
+      `Estimated Construction Cost: ${formatETB(result.projectEstimate)}`,
+      `Plan Review Fee: ${formatETB(result.planReviewFee)}`,
+      `Plan Approval Fee: ${formatETB(result.planApprovalFee)}`,
+      requirePlanningConsent ? `Planning Consent Fee: ${formatETB(result.planningConsentFee)}` : '',
+      ``,
+      `Total Payable: ${formatETB(result.totalPayable)}`,
+    ].filter(Boolean).join('\n') : ''
 
     // Fire the prefill event
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { floorCount, basement, serviceCategory2, serviceCategory3, result },
+      permitData: { buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
@@ -275,7 +301,7 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
             {tx.heading}<br />{tx.subheading}
           </h2>
           <p className="text-neutral-500 text-sm mt-4 max-w-md leading-relaxed">
-            {tx.description}
+            Calculate your building permit fees based on official Ethiopian and Addis Ababa regulations.
           </p>
         </motion.div>
 
@@ -288,23 +314,50 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-5"
           >
-            {/* Floor Count */}
+            {/* Building Use */}
+            <Dropdown
+              id="buildingUse"
+              label="Building Use/Type"
+              value={buildingUse}
+              onChange={setBuildingUse}
+              options={BUILDING_USES.map(t => ({ value: t.value, label: t.label }))}
+            />
+
+            {/* Structural Classification */}
+            <Dropdown
+              id="structuralClassification"
+              label="Structural Classification"
+              value={structuralClassification}
+              onChange={setStructuralClassification}
+              options={STRUCTURAL_CLASSIFICATIONS.map(s => ({ value: s.value, label: s.label }))}
+            />
+
+            {/* Floor Area */}
             <div>
-              <label htmlFor="floorCount" className={labelClass}>{tx.floorCount}</label>
+              <label htmlFor="floorArea" className={labelClass}>Total Floor Area (m²)</label>
               <input
-                id="floorCount"
+                id="floorArea"
                 type="number"
                 min="1"
                 step="1"
-                value={floorCount}
-                onChange={e => setFloorCount(e.target.value)}
+                value={floorArea}
+                onChange={e => setFloorArea(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCalculate()}
-                placeholder={lang === 'am' ? 'ለምሳሌግ 5' : 'e.g. 5'}
+                placeholder="e.g. 200"
                 className={`w-full bg-white/5 border text-white text-sm px-4 py-3 focus:outline-none focus:border-white/30 transition-colors placeholder-neutral-600 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                  ${errors.floorCount ? 'border-red-500/60' : 'border-white/10'}`}
+                  ${errors.floorArea ? 'border-red-500/60' : 'border-white/10'}`}
               />
-              {errors.floorCount && <p className="mt-1 text-[10px] text-red-400">{errors.floorCount}</p>}
+              {errors.floorArea && <p className="mt-1 text-[10px] text-red-400">{errors.floorArea}</p>}
             </div>
+
+            {/* Floor Count */}
+            <Dropdown
+              id="floorCount"
+              label="Number of Floors Above Ground"
+              value={floorCount}
+              onChange={setFloorCount}
+              options={FLOOR_COUNTS.map(f => ({ value: String(f.value), label: f.label }))}
+            />
 
             {/* Basement */}
             <Dropdown
@@ -312,26 +365,22 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
               label={tx.basement}
               value={basement}
               onChange={setBasement}
-              options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: lang === 'am' ? (b.value === 'none' ? tx.none : b.value === 'one' ? tx.oneBasement : b.value === 'two' ? tx.twoBasements : tx.threeBasements) : b.label }))}
+              options={BASEMENT_OPTIONS.map(b => ({ value: String(b.value), label: b.label }))}
             />
 
-            {/* Service Category 2 */}
-            <Dropdown
-              id="serviceCategory2"
-              label={tx.serviceCategory2}
-              value={serviceCategory2}
-              onChange={setServiceCategory2}
-              options={SERVICE_CATEGORY_2.map(s => ({ value: s.value, label: s.label }))}
-            />
-
-            {/* Service Category 3 */}
-            <Dropdown
-              id="serviceCategory3"
-              label={tx.serviceCategory3}
-              value={serviceCategory3}
-              onChange={setServiceCategory3}
-              options={SERVICE_CATEGORY_3.map(s => ({ value: s.value, label: s.label }))}
-            />
+            {/* Planning Consent */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="requirePlanningConsent"
+                checked={requirePlanningConsent}
+                onChange={e => setRequirePlanningConsent(e.target.checked)}
+                className="w-4 h-4 bg-white/10 border border-white/20 rounded-sm"
+              />
+              <label htmlFor="requirePlanningConsent" className="text-sm text-neutral-400">
+                Require Planning Consent (+300 ETB)
+              </label>
+            </div>
 
             {/* Buttons */}
             <div className="flex flex-wrap gap-3 pt-2">
@@ -415,30 +464,24 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
 
                   {/* Total */}
                   <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="label-text mb-2">{tx.total}</p>
+                    <p className="label-text mb-2">Total Payable</p>
                     <div className="font-display text-4xl md:text-5xl font-medium text-white tabular-nums">
-                      ETB <AnimatedNumber value={result.total} />
+                      ETB <AnimatedNumber value={result.totalPayable} />
                     </div>
                   </div>
 
                   {/* Reference info */}
                   <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">{tx.referenceCode}</span>
+                      <span className="label-text text-neutral-600">Reference Code</span>
                       <span className="label-text text-neutral-400 font-mono">
-                        {buildingType.slice(0,3).toUpperCase()}-{String(floorCount || 0).padStart(2,'0')}-{Math.floor(Math.random() * 9000) + 1000}
+                        BLD-{String(result.totalFloorArea).padStart(4,'0')}-{Math.floor(Math.random() * 9000) + 1000}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">{tx.referenceYear}</span>
+                      <span className="label-text text-neutral-600">Construction Rate</span>
                       <span className="label-text text-neutral-400">
-                        {REGULATORY_INFO.referenceYear}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">{tx.processingTime}</span>
-                      <span className="label-text text-neutral-400">
-                        {parseInt(floorCount || 0) <= 5 ? '4–6 weeks' : parseInt(floorCount || 0) <= 10 ? '6–10 weeks' : '10–16 weeks'}
+                        {result.constructionRate.toLocaleString('en-US')} ETB/m²
                       </span>
                     </div>
                   </div>
