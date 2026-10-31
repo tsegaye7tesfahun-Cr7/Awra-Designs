@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { BUILDING_TYPES, SERVICE_CATEGORY_2, SERVICE_CATEGORY_3, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { BUILDING_TYPES, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
 import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
 import t from '../utils/translations'
@@ -119,8 +119,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const [buildingType,       setBuildingType]       = useState('residential')
   const [floorCount,         setFloorCount]         = useState('')
   const [basement,           setBasement]           = useState('none')
-  const [serviceCategory2,  setServiceCategory2]  = useState('none')
-  const [serviceCategory3,  setServiceCategory3]  = useState('none')
   const [errors,             setErrors]             = useState({})
   const [result,             setResult]             = useState(null)
   const [calculated,         setCalculated]         = useState(false)
@@ -129,9 +127,9 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   useEffect(() => {
     if (!calculated) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ buildingType, floorCount: floors, basement, serviceCategory2, serviceCategory3 })
+    const res = calculatePermitFee({ buildingType, floorCount: floors, basement })
     setResult(res)
-  }, [buildingType, floorCount, basement, serviceCategory2, serviceCategory3, calculated])
+  }, [buildingType, floorCount, basement, calculated])
 
   const validate = useCallback(() => {
     const e = {}
@@ -146,7 +144,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handleCalculate = () => {
     if (!validate()) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ buildingType, floorCount: floors, basement, serviceCategory2, serviceCategory3 })
+    const res = calculatePermitFee({ buildingType, floorCount: floors, basement })
     setResult(res)
     setCalculated(true)
   }
@@ -155,8 +153,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     setBuildingType('residential')
     setFloorCount('')
     setBasement('none')
-    setServiceCategory2('none')
-    setServiceCategory3('none')
     setErrors({})
     setResult(null)
     setCalculated(false)
@@ -165,7 +161,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handlePrint = () => {
     if (!result) return
     const summary = generateCalculationSummary(
-      { buildingType, floorCount: parseInt(floorCount, 10), basement, serviceCategory2, serviceCategory3 },
+      { buildingType, floorCount: parseInt(floorCount, 10), basement },
       result
     )
     const printWindow = window.open('', '_blank')
@@ -195,8 +191,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
             <p><span class="label">Building Type:</span> <span class="value">${summary.buildingType}</span></p>
             <p><span class="label">Number of Floors:</span> <span class="value">${summary.floorCount}</span></p>
             <p><span class="label">Basement Levels:</span> <span class="value">${summary.basementLevel}</span></p>
-            <p><span class="label">Service Category 2:</span> <span class="value">${summary.serviceCategory2}</span></p>
-            <p><span class="label">Service Category 3:</span> <span class="value">${summary.serviceCategory3}</span></p>
           </div>
           <div class="section">
             <h2>Fee Breakdown</h2>
@@ -225,13 +219,9 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
       `Building Type: ${BUILDING_TYPES.find(b => b.value === buildingType)?.label}`,
       `Number of Floors: ${floorCount}`,
       `Basement: ${BASEMENT_OPTIONS.find(b => b.value === basement)?.label}`,
-      `Service Category 2: ${SERVICE_CATEGORY_2.find(s => s.value === serviceCategory2)?.label}`,
-      `Service Category 3: ${SERVICE_CATEGORY_3.find(s => s.value === serviceCategory3)?.label}`,
       ``,
       `Estimated Fees:`,
       `  Base Permit Fee: ${formatETB(result.basePermitFee)}`,
-      `  Service Category 2: ${formatETB(result.serviceCategory2)}`,
-      `  Service Category 3: ${formatETB(result.serviceCategory3)}`,
       `  Basement Fee: ${formatETB(result.basement)}`,
       `  Total Estimated Cost: ${formatETB(result.total)}`,
     ].join('\n') : ''
@@ -240,7 +230,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { buildingType, floorCount, basement, serviceCategory2, serviceCategory3, result },
+      permitData: { buildingType, floorCount, basement, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
@@ -327,24 +317,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
               value={basement}
               onChange={setBasement}
               options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: lang === 'am' ? (b.value === 'none' ? tx.none : b.value === 'one' ? tx.oneBasement : b.value === 'two' ? tx.twoBasements : tx.threeBasements) : b.label }))}
-            />
-
-            {/* Service Category 2 */}
-            <Dropdown
-              id="serviceCategory2"
-              label={tx.serviceCategory2}
-              value={serviceCategory2}
-              onChange={setServiceCategory2}
-              options={SERVICE_CATEGORY_2.map(s => ({ value: s.value, label: s.label }))}
-            />
-
-            {/* Service Category 3 */}
-            <Dropdown
-              id="serviceCategory3"
-              label={tx.serviceCategory3}
-              value={serviceCategory3}
-              onChange={setServiceCategory3}
-              options={SERVICE_CATEGORY_3.map(s => ({ value: s.value, label: s.label }))}
             />
 
             {/* Buttons */}
