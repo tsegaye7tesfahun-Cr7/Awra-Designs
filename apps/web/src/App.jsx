@@ -39,7 +39,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-gray-50 pb-[72px] lg:pb-0 text-white dark:text-white light:text-neutral-900">
+      <div id="main-content" className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-gray-50 pb-[72px] lg:pb-0 text-white dark:text-white light:text-neutral-900">
         <Cursor />
         <ProgressBar />
         <PWAInstallPrompt lang={lang} />
