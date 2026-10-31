@@ -1,3 +1,4 @@
+import './lib/envValidation'
 import app from './app'
 
 const PORT = parseInt(process.env.PORT || '4000', 10)
