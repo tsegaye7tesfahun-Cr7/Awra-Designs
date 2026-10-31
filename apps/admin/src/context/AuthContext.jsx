@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 
 const SESSION_TIMEOUT = 30 * 60 * 1000 // 30 minutes of inactivity
@@ -14,7 +13,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false)
   const [timeoutCountdown, setTimeoutCountdown] = useState(0)
-  const navigate = useNavigate()
 
   // Reset session timer
   const resetSessionTimer = useCallback(() => {
@@ -109,8 +107,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('lastActivity')
     setAdmin(null)
     setShowTimeoutWarning(false)
-    navigate('/login')
-  }, [navigate])
+    window.location.href = '/login'
+  }, [])
 
   const updateProfile = (updated) => {
     setAdmin(updated)
