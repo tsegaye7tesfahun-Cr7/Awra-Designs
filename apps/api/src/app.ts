@@ -27,6 +27,7 @@ import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
 import { setCSRFToken, validateCSRFToken } from './middleware/csrf'
 import { startScheduler } from './lib/scheduler'
+import { healthCheck, readinessCheck } from './lib/health'
 import prisma from './lib/prisma'
 
 const app = express()
@@ -69,9 +70,8 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // ── Health check ──────────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => {
-  res.json({ success: true, message: 'Awra Designs API is running' })
-})
+app.get('/health', healthCheck)
+app.get('/readiness', readinessCheck)
 
 // ── Neon keep-alive ping every 4 minutes ─────────────────────────────────────
 const PING_INTERVAL = 4 * 60 * 1000
