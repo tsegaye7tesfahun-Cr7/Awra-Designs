@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
 import useSettings from '../lib/useSettings'
