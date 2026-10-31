@@ -12,36 +12,6 @@ export default function Login() {
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
 
-  // Avatar hint — fetched from backend when a valid email is typed
-  const [hint,         setHint]         = useState(null)  // { name, avatar, role }
-  const [hintLoading,  setHintLoading]  = useState(false)
-
-  // Debounce email lookup — only fires after user stops typing for 500ms
-  useEffect(() => {
-    const trimmed = email.trim().toLowerCase()
-    if (!trimmed.includes('@') || !trimmed.includes('.')) {
-      setHint(null)
-      return
-    }
-    const timer = setTimeout(async () => {
-      setHintLoading(true)
-      try {
-        const res = await fetch(`${API}/auth/hint?email=${encodeURIComponent(trimmed)}`)
-        const data = await res.json()
-        if (data.success && data.data) {
-          setHint(data.data)
-        } else {
-          setHint(null)
-        }
-      } catch {
-        setHint(null)
-      } finally {
-        setHintLoading(false)
-      }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [email])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -56,33 +26,9 @@ export default function Login() {
     }
   }
 
-  const initials = hint?.name
-    ? hint.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?'
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-
-        {/* Avatar hint — appears once a valid email is recognised */}
-        <div className={`flex items-center gap-3 mb-6 transition-all duration-300 ${hint ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          style={{ minHeight: '48px' }}>
-          {hint?.avatar
-            ? <img src={hint.avatar} alt={hint.name}
-                className="w-10 h-10 rounded-full object-cover border border-neutral-800 flex-shrink-0" />
-            : <div className="w-10 h-10 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm font-medium text-neutral-400 flex-shrink-0">
-                {hintLoading
-                  ? <div className="w-3 h-3 border border-neutral-600 border-t-white rounded-full animate-spin" />
-                  : initials}
-              </div>
-          }
-          {hint && (
-            <div>
-              <p className="text-sm font-medium text-white">{hint.name}</p>
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider">{hint.role || 'admin'}</p>
-            </div>
-          )}
-        </div>
 
         <div className="mb-8 text-center">
           <img src="/logo.png" alt="Awra Admin" className="h-16 mx-auto mb-4" />
