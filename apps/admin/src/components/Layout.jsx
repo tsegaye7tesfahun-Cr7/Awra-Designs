@@ -158,7 +158,6 @@ export default function Layout() {
               <path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
             </svg>
           </button>
-          <span className="text-sm font-medium text-white">Awra Admin</span>
           {unread > 0 && (
             <span className="ml-auto min-w-[18px] h-[18px] flex items-center justify-center bg-red-600 text-white text-[10px] font-bold rounded-full px-1">
               {unread}
