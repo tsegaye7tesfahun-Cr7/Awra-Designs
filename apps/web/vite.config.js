@@ -52,12 +52,6 @@ export default defineConfig({
     host: true,
     open: true,
     strictPort: false,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
   },
   build: {
     outDir: 'dist',
