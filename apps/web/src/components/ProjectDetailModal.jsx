@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import SocialShare from './SocialShare'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -100,8 +101,17 @@ export default function ProjectDetailModal({ isOpen, onClose, projectId, lang = 
 
                     {/* Content */}
                     <div className="p-6 md:p-8">
-                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">{project.category}</p>
-                      <h2 className="text-2xl md:text-3xl font-medium text-white mb-4">{project.title}</h2>
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">{project.category}</p>
+                          <h2 className="text-2xl md:text-3xl font-medium text-white">{project.title}</h2>
+                        </div>
+                        <SocialShare 
+                          title={project.title}
+                          url={typeof window !== 'undefined' ? window.location.href : undefined}
+                          description={project.shortDescription || project.description}
+                        />
+                      </div>
                       
                       {project.shortDescription && (
                         <p className="text-sm text-neutral-400 mb-6">{project.shortDescription}</p>
