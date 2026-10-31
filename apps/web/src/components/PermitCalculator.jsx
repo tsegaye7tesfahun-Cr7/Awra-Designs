@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { BUILDING_TYPES, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
 import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
 import t from '../utils/translations'
@@ -116,7 +116,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const tx = t[lang].permit
 
   // Form state
-  const [buildingType,       setBuildingType]       = useState('residential')
   const [floorCount,         setFloorCount]         = useState('')
   const [basement,           setBasement]           = useState('none')
   const [errors,             setErrors]             = useState({})
@@ -127,9 +126,9 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   useEffect(() => {
     if (!calculated) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ buildingType, floorCount: floors, basement })
+    const res = calculatePermitFee({ floorCount: floors, basement })
     setResult(res)
-  }, [buildingType, floorCount, basement, calculated])
+  }, [floorCount, basement, calculated])
 
   const validate = useCallback(() => {
     const e = {}
@@ -144,13 +143,12 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handleCalculate = () => {
     if (!validate()) return
     const floors = parseInt(floorCount, 10)
-    const res = calculatePermitFee({ buildingType, floorCount: floors, basement })
+    const res = calculatePermitFee({ floorCount: floors, basement })
     setResult(res)
     setCalculated(true)
   }
 
   const handleReset = () => {
-    setBuildingType('residential')
     setFloorCount('')
     setBasement('none')
     setErrors({})
@@ -161,7 +159,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handlePrint = () => {
     if (!result) return
     const summary = generateCalculationSummary(
-      { buildingType, floorCount: parseInt(floorCount, 10), basement },
+      { floorCount: parseInt(floorCount, 10), basement },
       result
     )
     const printWindow = window.open('', '_blank')
@@ -188,7 +186,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
             <p><span class="label">Date:</span> <span class="value">${summary.date}</span></p>
           </div>
           <div class="section">
-            <p><span class="label">Building Type:</span> <span class="value">${summary.buildingType}</span></p>
             <p><span class="label">Number of Floors:</span> <span class="value">${summary.floorCount}</span></p>
             <p><span class="label">Basement Levels:</span> <span class="value">${summary.basementLevel}</span></p>
           </div>
@@ -216,7 +213,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
   const handleConsultation = () => {
     // Build prefill message
     const lines = result ? [
-      `Building Type: ${BUILDING_TYPES.find(b => b.value === buildingType)?.label}`,
       `Number of Floors: ${floorCount}`,
       `Basement: ${BASEMENT_OPTIONS.find(b => b.value === basement)?.label}`,
       ``,
@@ -230,7 +226,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { buildingType, floorCount, basement, result },
+      permitData: { floorCount, basement, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
@@ -244,7 +240,7 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
     <section
       id="permit-calculator"
       ref={ref}
-      className={`relative bg-[#0a0a0a] overflow-hidden ${inline ? '' : ''}`}
+      className="relative bg-[#0a0a0a] overflow-hidden"
     >
       {/* Floor plan fragment — decorative */}
       {!inline && <FloorPlanFragment opacity={0.02} className="w-96 h-72 top-0 right-0 hidden xl:block" />}
@@ -279,19 +275,6 @@ export default function PermitCalculator({ inline = false, lang = 'en' }) {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-5"
           >
-            {/* Building Type */}
-            <Dropdown
-              id="buildingType"
-              label={tx.buildingType}
-              value={buildingType}
-              onChange={setBuildingType}
-              options={BUILDING_TYPES.map(t => ({
-                value: t.value,
-                label: t.value !== 'residential' ? `${t.label} (coming soon)` : t.label,
-                disabled: t.value !== 'residential',
-              }))}
-            />
-
             {/* Floor Count */}
             <div>
               <label htmlFor="floorCount" className={labelClass}>{tx.floorCount}</label>

@@ -9,13 +9,12 @@ import {
 
 /**
  * @param {object} params
- * @param {'residential'|'commercial'|'mixed'} params.buildingType
  * @param {number}  params.floorCount  — positive integer (number of floors)
  * @param {'none'|'one'|'two'|'three'} params.basement
  * @returns {{ basePermitFee: number, basement: number, total: number, breakdown: object[] } | null}
  */
-export function calculatePermitFee({ buildingType, floorCount, basement }) {
-  if (!buildingType || !floorCount || floorCount <= 0 || !basement) return null
+export function calculatePermitFee({ floorCount, basement }) {
+  if (!floorCount || floorCount <= 0 || !basement) return null
 
   // Validate floor count is an integer
   if (!Number.isInteger(floorCount) || floorCount < 1) return null
@@ -25,8 +24,8 @@ export function calculatePermitFee({ buildingType, floorCount, basement }) {
   const basementLevel = basementMap[basement]
   if (basementLevel === undefined) return null
 
-  // ── Base Permit Fee by Floor Count ───────────────────────────────────────
-  const tiers = PERMIT_FEE_TIERS[buildingType]
+  // ── Base Permit Fee by Floor Count (using residential tier as default) ─────────
+  const tiers = PERMIT_FEE_TIERS.residential
   if (!tiers) return null
 
   const tier = tiers.find(t => floorCount <= t.maxFloors)
@@ -61,12 +60,11 @@ export function formatETB(amount) {
 
 /** Generate a printable summary object */
 export function generateCalculationSummary(params, result) {
-  const { buildingType, floorCount, basement } = params
+  const { floorCount, basement } = params
 
   return {
     date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-    referenceCode: `${buildingType.slice(0,3).toUpperCase()}-${String(floorCount).padStart(2,'0')}-${Math.floor(Math.random() * 9000) + 1000}`,
-    buildingType: buildingType.charAt(0).toUpperCase() + buildingType.slice(1),
+    referenceCode: `BLD-${String(floorCount).padStart(2,'0')}-${Math.floor(Math.random() * 9000) + 1000}`,
     floorCount,
     basementLevel: basement === 'none' ? 0 : { one: 1, two: 2, three: 3 }[basement],
     breakdown: result.breakdown,

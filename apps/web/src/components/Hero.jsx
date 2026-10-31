@@ -125,7 +125,7 @@ const Hero = ({ lang = 'en' }) => {
 
               <button
                 onClick={() => {
-                  const el = document.getElementById('permit')
+                  const el = document.getElementById('permit-calculator')
                   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }}
                 className="group inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
