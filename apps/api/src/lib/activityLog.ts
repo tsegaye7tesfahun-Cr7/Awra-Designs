@@ -6,12 +6,13 @@ export type LogAction =
   | 'featured' | 'unfeatured'
   | 'replied' | 'archived' | 'password_changed'
   | 'webhook_registered' | 'webhook_deleted'
+  | 'newsletter_subscribed' | 'newsletter_unsubscribed'
 
 export type LogEntity =
   | 'project' | 'blog_post' | 'testimonial'
   | 'faq' | 'about' | 'contact_message'
   | 'setting' | 'project_group' | 'media'
-  | 'webhook'
+  | 'webhook' | 'newsletter'
 
 interface LogParams {
   adminId?:    string

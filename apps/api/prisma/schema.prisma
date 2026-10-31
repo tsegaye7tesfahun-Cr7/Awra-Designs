@@ -147,6 +147,18 @@ model BlogPost {
   @@map("blog_posts")
 }
 
+model Newsletter {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  status    String   @default("active") // "active" | "unsubscribed"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("newsletters")
+}
+
 model ContactMessage {
   id         String   @id @default(uuid())
   name       String
