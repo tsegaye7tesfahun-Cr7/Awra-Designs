@@ -1,10 +1,23 @@
 // In dev, Vite proxies /api → localhost:5000. In prod, set VITE_API_URL.
 const BASE = import.meta.env.VITE_API_URL || '/api'
 
+function getCSRFToken() {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrf_token='))
+    ?.split('=')[1]
+}
+
 async function request(method, path, body) {
   const token = localStorage.getItem('token')
   const headers = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
+  
+  // Add CSRF token for state-changing requests
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCSRFToken()
+    if (csrfToken) headers['x-csrf-token'] = csrfToken
+  }
 
   const res = await fetch(`${BASE}${path}`, {
     method,

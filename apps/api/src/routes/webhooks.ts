@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { body } from 'express-validator'
 import prisma from '../lib/prisma'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, AuthRequest } from '../middleware/auth'
 import { validate } from '../middleware/validate'
 import { log } from '../lib/activityLog'
 
@@ -60,14 +60,14 @@ webhookRouter.post('/register', requireAuth, [
   body('url').isURL().withMessage('Valid URL required'),
   body('secret').notEmpty().withMessage('Secret required'),
   body('events').isArray().withMessage('Events array required'),
-], validate, async (req: Request, res: Response) => {
+], validate, async (req: AuthRequest, res: Response) => {
   try {
     const { url, secret, events } = req.body
     const id = `webhook_${Date.now()}`
     
     activeWebhooks.set(id, { url, secret, events })
     
-    await log(req.user!.id, 'webhook_registered', { webhookId: id, url, events })
+    await log({ adminId: req.adminId, action: 'webhook_registered', entity: 'webhook', entityId: id, meta: { url, events } })
     
     res.json({ success: true, data: { id, url, events } })
   } catch (error) {
@@ -91,7 +91,7 @@ webhookRouter.get('/list', requireAuth, async (req: Request, res: Response) => {
 })
 
 // ADMIN: Delete webhook
-webhookRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
+webhookRouter.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params
     
@@ -101,7 +101,7 @@ webhookRouter.delete('/:id', requireAuth, async (req: Request, res: Response) =>
     
     activeWebhooks.delete(id)
     
-    await log(req.user!.id, 'webhook_deleted', { webhookId: id })
+    await log({ adminId: req.adminId, action: 'webhook_deleted', entity: 'webhook', entityId: id })
     
     res.json({ success: true, message: 'Webhook deleted' })
   } catch (error) {

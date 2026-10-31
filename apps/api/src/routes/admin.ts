@@ -1,10 +1,19 @@
 import { Router, Response, NextFunction } from 'express'
 import prisma from '../lib/prisma'
 import { requireAuth, AuthRequest } from '../middleware/auth'
+import { validateCSRFToken } from '../middleware/csrf'
 import { log } from '../lib/activityLog'
 
 export const adminRouter = Router()
 adminRouter.use(requireAuth)
+
+// Validate CSRF for state-changing methods (POST, PUT, PATCH, DELETE)
+adminRouter.use((req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return validateCSRFToken(req, res, next)
+  }
+  next()
+})
 
 // GET /api/admin/dashboard  — overview stats
 adminRouter.get('/dashboard', async (_req: AuthRequest, res: Response, next: NextFunction) => {

@@ -5,11 +5,13 @@ export type LogAction =
   | 'published' | 'unpublished'
   | 'featured' | 'unfeatured'
   | 'replied' | 'archived' | 'password_changed'
+  | 'webhook_registered' | 'webhook_deleted'
 
 export type LogEntity =
   | 'project' | 'blog_post' | 'testimonial'
   | 'faq' | 'about' | 'contact_message'
   | 'setting' | 'project_group' | 'media'
+  | 'webhook'
 
 interface LogParams {
   adminId?:    string

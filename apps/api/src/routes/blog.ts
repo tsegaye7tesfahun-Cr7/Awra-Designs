@@ -47,7 +47,7 @@ blogRouter.get('/rss', async (req: Request, res: Response) => {
 `
 
     posts.forEach(post => {
-      const pubDate = new Date(post.publishedAt).toUTCString()
+      const pubDate = post.publishedAt ? new Date(post.publishedAt).toUTCString() : new Date().toUTCString()
       const postUrl = `${baseUrl}/blog/${post.slug}`
       const categories = post.tags && post.tags.length > 0 ? post.tags.join(', ') : post.category || 'General'
       
