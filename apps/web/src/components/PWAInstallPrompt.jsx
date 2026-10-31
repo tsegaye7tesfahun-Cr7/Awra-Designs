@@ -115,7 +115,7 @@ export default function PWAInstallPrompt({ lang = 'en' }) {
             {/* App identity row */}
             <div className="flex items-center gap-3 mb-3">
               <img
-                src="/pwa-icon-192.svg"
+                src="/favicon.ico"
                 alt="Awra Designs"
                 className="w-10 h-10 rounded-xl flex-shrink-0"
               />
