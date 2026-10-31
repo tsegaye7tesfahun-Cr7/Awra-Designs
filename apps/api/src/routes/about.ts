@@ -4,12 +4,13 @@ import prisma from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { validate } from '../middleware/validate'
 import { generalLimiter } from '../middleware/rateLimiter'
+import { cacheResponse, clearCache } from '../middleware/cache'
 
 export const aboutRouter = Router()
 aboutRouter.use(generalLimiter)
 
-// GET /api/about  — public, returns the single active record
-aboutRouter.get('/', async (_req, res: Response, next: NextFunction) => {
+// GET /api/about  — public, returns the single active record (cached)
+aboutRouter.get('/', cacheResponse({ ttl: 10 * 60 * 1000 }), async (_req, res: Response, next: NextFunction) => {
   try {
     const about = await prisma.about.findFirst({
       where: { isActive: true },
@@ -44,6 +45,8 @@ aboutRouter.post('/', requireAuth, aboutValidation, validate,
         },
         include: { teamMembers: true },
       })
+      // Clear cache after update
+      clearCache('/api/about')
       res.status(201).json({ success: true, data: about })
     } catch (err) { next(err) }
   }

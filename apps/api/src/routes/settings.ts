@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express'
 import prisma from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { generalLimiter } from '../middleware/rateLimiter'
+import { cacheResponse, clearCache } from '../middleware/cache'
 import { log } from '../lib/activityLog'
 
 export const settingsRouter = Router()
@@ -32,8 +33,8 @@ const DEFAULTS: Record<string, string> = {
   resend_api_key:     '',
 }
 
-// GET /api/settings — public, returns all settings as key-value object
-settingsRouter.get('/', async (_req, res: Response, next: NextFunction) => {
+// GET /api/settings — public, returns all settings as key-value object (cached)
+settingsRouter.get('/', cacheResponse({ ttl: 10 * 60 * 1000 }), async (_req, res: Response, next: NextFunction) => {
   try {
     const rows = await prisma.setting.findMany()
     const result: Record<string, string> = { ...DEFAULTS }
@@ -55,6 +56,8 @@ settingsRouter.put('/', requireAuth, async (req: Request, res: Response, next: N
         })
       )
     )
+    // Clear cache after update
+    clearCache('/api/settings')
     const rows = await prisma.setting.findMany()
     const result: Record<string, string> = { ...DEFAULTS }
     for (const row of rows) result[row.key] = row.value
