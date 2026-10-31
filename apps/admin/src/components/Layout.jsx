@@ -69,9 +69,9 @@ export default function Layout() {
 
   const SidebarContent = () => (
     <>
-      <div className="px-5 py-6 border-b border-neutral-900 flex items-center justify-between">
+      <div className="px-5 py-6 border-b border-neutral-900 flex items-center justify-center relative">
         <img src="/logo.png" alt="Awra Admin" className="h-8" />
-        <button onClick={closeSidebar} className="md:hidden text-neutral-500 hover:text-white text-lg leading-none">✕</button>
+        <button onClick={closeSidebar} className="md:hidden absolute right-5 text-neutral-500 hover:text-white text-lg leading-none">✕</button>
       </div>
 
       <nav className="flex-1 py-3 px-2 overflow-y-auto">
@@ -106,14 +106,9 @@ export default function Layout() {
       </nav>
 
       <div className="px-4 py-4 border-t border-neutral-900">
-        {/* Avatar + name */}
+        {/* Logo + name */}
         <div className="flex items-center gap-2.5 mb-3">
-          {admin?.avatar
-            ? <img src={admin.avatar} alt={admin.name} className="w-7 h-7 rounded-full object-cover border border-neutral-700 flex-shrink-0" />
-            : <div className="w-7 h-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-400 flex-shrink-0">
-                {admin?.name ? admin.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}
-              </div>
-          }
+          <img src="/logo.png" alt="Awra Admin" className="w-7 h-7 object-contain flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-xs text-white truncate">{admin?.name || 'Admin'}</p>
             <p className="text-[10px] text-neutral-600 uppercase tracking-wider">{admin?.role || 'admin'}</p>
