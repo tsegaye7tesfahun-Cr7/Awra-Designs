@@ -24,6 +24,7 @@ import { reseedRouter } from './routes/reseed'
 import { webhookRouter } from './routes/webhooks'
 import { sitemapRouter } from './routes/sitemap'
 import { newsletterRouter } from './routes/newsletter'
+import chatRouter from './routes/chat'
 import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
 import { setCSRFToken, validateCSRFToken } from './middleware/csrf'
@@ -113,6 +114,7 @@ app.use('/api/analytics',  analyticsRouter)   // admin dashboard endpoints
 app.use('/api/reseed', reseedRouter)
 app.use('/api/webhooks', webhookRouter)
 app.use('/api/newsletter', newsletterRouter)
+app.use('/api/chat', chatRouter)
 app.use('/sitemap.xml', sitemapRouter)
 
 // ── Error handling ────────────────────────────────────────────────────────────

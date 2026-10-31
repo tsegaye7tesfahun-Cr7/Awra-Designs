@@ -6,6 +6,7 @@ import Cursor from './components/Cursor'
 import FloatingCTA from './components/FloatingCTA'
 import LazySection from './components/LazySection'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
+import ChatWidget from './components/ChatWidget'
 import NotFound from './components/NotFound'
 import Error from './components/Error'
 import { ThemeProvider } from './context/ThemeContext'
@@ -65,6 +66,7 @@ function App() {
             <Footer lang={lang} />
           </LazySection>
         </Suspense>
+        <ChatWidget />
       </div>
     </ThemeProvider>
   )

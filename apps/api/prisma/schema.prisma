@@ -273,3 +273,15 @@ model ConversionEvent {
   @@index([createdAt])
   @@map("conversion_events")
 }
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  text      String
+  sender    String   // "user" | "bot"
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
