@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer'
 import t from '../utils/translations'
 import { trackView, trackEvent } from '../lib/analytics'
 import { FloorPlanFragment, SheetRef } from './ArchDetails'
+import ProjectDetailModal from './ProjectDetailModal'
 
 function getProjectId(index) {
   return `AW-${String(index + 1).padStart(3, '0')}`
@@ -152,6 +153,8 @@ const WaIcon = () => (
 export default function Portfolio({ lang = 'en' }) {
   const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: true })
   const [selected, setSelected] = useState(null)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [detailProjectId, setDetailProjectId] = useState(null)
   const [scrollPos, setScrollPos] = useState(0)
   const [activeGroup, setActiveGroup] = useState('all')
   const [activeSub, setActiveSub] = useState(null)
@@ -221,6 +224,15 @@ export default function Portfolio({ lang = 'en' }) {
     setSelected(null)
     document.body.style.overflow = ''
     setTimeout(() => window.scrollTo({ top: scrollPos, behavior: 'instant' }), 80)
+  }
+
+  const openDetailModal = (projectId) => {
+    setDetailProjectId(projectId)
+    setDetailModalOpen(true)
+  }
+  const closeDetailModal = () => {
+    setDetailModalOpen(false)
+    setDetailProjectId(null)
   }
 
   // ESC key — document-level so it works regardless of focus

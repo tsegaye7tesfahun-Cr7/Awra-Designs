@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
 import useSettings from '../lib/useSettings'
+import SearchModal from './SearchModal'
 
 const SCROLL_THROTTLE_MS = 120
 
@@ -12,6 +13,7 @@ const ALL_SECTIONS = ['home', 'works', 'about', 'testimonials', 'contact']
 
 const Navbar = ({ isScrolled, lang, setLang }) => {
   const [activeSection, setActiveSection] = useState('home')
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,17 +133,38 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
           {/* ── Desktop nav (md+): all links ─────────────────────────────── */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8 flex-shrink-0">
             {desktopLinks.map(link => <NavLink key={link.id} link={link} />)}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="text-neutral-500 hover:text-white transition-colors"
+              aria-label="Search"
+            >
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
             <LangToggle />
           </div>
 
           {/* ── Mobile nav (< md): shortened links ───────────────────────── */}
           <div className="flex md:hidden items-center gap-3 xs:gap-4 flex-shrink-0">
             {mobileLinks.map(link => <NavLink key={link.id} link={link} />)}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="text-neutral-500 hover:text-white transition-colors"
+              aria-label="Search"
+            >
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
             <LangToggle />
           </div>
 
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} lang={lang} />
     </motion.nav>
   )
 }
