@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import imagemin from 'vite-plugin-imagemin'
 
 export default defineConfig({
   base: '/',
@@ -45,6 +46,21 @@ export default defineConfig({
       devOptions: {
         enabled: true,          // enables SW in dev so the install prompt fires
         type: 'module',
+      },
+    }),
+    imagemin({
+      gifsicle: { optimizationLevel: 7 },
+      optipng: { optimizationLevel: 7 },
+      mozjpeg: { quality: 80 },
+      pngquant: { quality: [0.65, 0.9], speed: 4 },
+      svgo: {
+        plugins: [
+          { name: 'removeViewBox', active: false },
+          { name: 'removeEmptyAttrs', active: false },
+        ],
+      },
+      webp: {
+        quality: 75,
       },
     }),
   ],
