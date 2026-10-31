@@ -9,8 +9,8 @@ import { useTheme } from '../context/ThemeContext'
 const SCROLL_THROTTLE_MS = 120
 
 // Section order matches page layout:
-// works → about → testimonials → contact
-const ALL_SECTIONS = ['home', 'works', 'about', 'testimonials', 'contact']
+// works → about → contact
+const ALL_SECTIONS = ['home', 'works', 'about', 'contact']
 
 const Navbar = ({ isScrolled, lang, setLang }) => {
   const [activeSection, setActiveSection] = useState('home')
@@ -52,10 +52,9 @@ const Navbar = ({ isScrolled, lang, setLang }) => {
 
   // Desktop: all links
   const desktopLinks = [
-    { name: tx.work,         id: 'works'        },
-    { name: tx.about,        id: 'about'        },
-    { name: tx.testimonials, id: 'testimonials' },
-    { name: tx.contact,      id: 'contact'      },
+    { name: tx.work,    id: 'works'   },
+    { name: tx.about,   id: 'about'   },
+    { name: tx.contact, id: 'contact' },
   ]
 
   // Mobile: shorter list
