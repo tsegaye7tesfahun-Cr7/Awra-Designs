@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth'
 import { validate } from '../middleware/validate'
 import { generalLimiter } from '../middleware/rateLimiter'
 import { log } from '../lib/activityLog'
+import { triggerWebhook } from './webhooks'
 
 export const projectsRouter = Router()
 projectsRouter.use(generalLimiter)
@@ -105,6 +106,10 @@ projectsRouter.post('/', requireAuth, projectValidation, validate,
       })
       const r = req as any
       log({ adminId: r.adminId, adminEmail: r.adminEmail, action: 'created', entity: 'project', entityId: project.id, entityName: project.title })
+      
+      // Trigger webhook
+      await triggerWebhook('project.created', { project })
+      
       res.status(201).json({ success: true, data: project })
     } catch (err: any) {
       if (err.code === 'P2002') {
@@ -153,6 +158,10 @@ projectsRouter.put('/:id', requireAuth, projectValidation, validate,
       })
       const r = req as any
       log({ adminId: r.adminId, adminEmail: r.adminEmail, action: 'updated', entity: 'project', entityId: project.id, entityName: project.title })
+      
+      // Trigger webhook
+      await triggerWebhook('project.updated', { project })
+      
       res.json({ success: true, data: project })
     } catch (err: any) {
       if (err.code === 'P2025') { res.status(404).json({ success: false, message: 'Project not found' }); return }
@@ -177,6 +186,10 @@ projectsRouter.patch('/:id', requireAuth, async (req: Request, res: Response, ne
     if ('isFeatured' in req.body) {
       log({ adminId: r.adminId, adminEmail: r.adminEmail, action: req.body.isFeatured ? 'featured' : 'unfeatured', entity: 'project', entityId: project.id, entityName: project.title })
     }
+    
+    // Trigger webhook
+    await triggerWebhook('project.patched', { project, changes: data })
+    
     res.json({ success: true, data: project })
   } catch (err: any) {
     if (err.code === 'P2025') { res.status(404).json({ success: false, message: 'Project not found' }); return }
@@ -191,6 +204,10 @@ projectsRouter.delete('/:id', requireAuth, async (req: Request, res: Response, n
     await prisma.project.delete({ where: { id: req.params.id } })
     const r = req as any
     log({ adminId: r.adminId, adminEmail: r.adminEmail, action: 'deleted', entity: 'project', entityId: req.params.id, entityName: project?.title })
+    
+    // Trigger webhook
+    await triggerWebhook('project.deleted', { projectId: req.params.id, projectName: project?.title })
+    
     res.json({ success: true, message: 'Project deleted' })
   } catch (err: any) {
     if (err.code === 'P2025') { res.status(404).json({ success: false, message: 'Project not found' }); return }

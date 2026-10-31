@@ -10,6 +10,73 @@ import { log } from '../lib/activityLog'
 export const blogRouter = Router()
 blogRouter.use(generalLimiter)
 
+// RSS Feed
+blogRouter.get('/rss', async (req: Request, res: Response) => {
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { isPublished: true },
+      orderBy: { publishedAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        content: true,
+        coverImage: true,
+        category: true,
+        tags: true,
+        author: true,
+        publishedAt: true,
+        updatedAt: true,
+      },
+    })
+
+    const baseUrl = 'https://awradesigns.com'
+    const rssDate = new Date().toUTCString()
+
+    let rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Awra Designs Blog</title>
+    <description>Architecture and Design Insights from Awra Designs</description>
+    <link>${baseUrl}/</link>
+    <atom:link href="${baseUrl}/api/blog/rss" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    <lastBuildDate>${rssDate}</lastBuildDate>
+`
+
+    posts.forEach(post => {
+      const pubDate = new Date(post.publishedAt).toUTCString()
+      const postUrl = `${baseUrl}/blog/${post.slug}`
+      const categories = post.tags && post.tags.length > 0 ? post.tags.join(', ') : post.category || 'General'
+      
+      // Strip HTML tags from content for description
+      const plainContent = post.content?.replace(/<[^>]*>/g, '').substring(0, 500) || post.excerpt || ''
+
+      rss += `    <item>
+      <title>${post.title}</title>
+      <link>${postUrl}</link>
+      <guid isPermaLink="true">${postUrl}</guid>
+      <description><![CDATA[${plainContent}]]></description>
+      <category>${categories}</category>
+      <author>${post.author || 'Awra Designs'}</author>
+      <pubDate>${pubDate}</pubDate>
+    </item>
+`
+    })
+
+    rss += `  </channel>
+</rss>`
+
+    res.set('Content-Type', 'application/rss+xml')
+    res.send(rss)
+  } catch (error) {
+    console.error('RSS feed error:', error)
+    res.status(500).json({ success: false, error: 'Failed to generate RSS feed' })
+  }
+})
+
 // ── PUBLIC ─────────────────────────────────────────────────────────────────────
 
 // GET /api/blog  — published only, supports ?page=1&limit=10&category=&search=

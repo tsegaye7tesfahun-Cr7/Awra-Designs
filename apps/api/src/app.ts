@@ -21,6 +21,8 @@ import { projectGroupsRouter } from './routes/projectGroups'
 import { adminsRouter } from './routes/admins'
 import { analyticsRouter } from './routes/analytics'
 import { reseedRouter } from './routes/reseed'
+import { webhookRouter } from './routes/webhooks'
+import { sitemapRouter } from './routes/sitemap'
 import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
 import { startScheduler } from './lib/scheduler'
@@ -103,6 +105,8 @@ app.use('/api/admins', adminsRouter)
 app.use('/api/collect',    analyticsRouter)   // public tracker (avoids ad-blocker blocks)
 app.use('/api/analytics',  analyticsRouter)   // admin dashboard endpoints
 app.use('/api/reseed', reseedRouter)
+app.use('/api/webhooks', webhookRouter)
+app.use('/sitemap.xml', sitemapRouter)
 
 // ── Error handling ────────────────────────────────────────────────────────────
 app.use(notFound)
