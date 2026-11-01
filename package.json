@@ -6,6 +6,9 @@
   "workspaces": [
     "apps/*"
   ],
+  "devDependencies": {
+    "vite": "5.4.11"
+  },
   "scripts": {
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
