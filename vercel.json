@@ -1,6 +1,8 @@
 {
-  "buildCommand": "npm run build:web",
+  "buildCommand": "npm run build",
   "installCommand": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
   "framework": null,
-  "outputDirectory": "apps/web/dist"
+  "outputDirectory": "dist",
+  "functions": {},
+  "rootDirectory": "apps/web"
 }
