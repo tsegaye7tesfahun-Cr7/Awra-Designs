@@ -2,9 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Century Gothic — self-hosted, all weights ───────────────────────────── */
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicRegular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicThin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicSemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicBlack.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Map weight 500 (font-medium) to SemiBold — closest available */
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('/Century-Gothic-Sans-Font/CenturyGothicSemiBold.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
 @layer base {
   :root {
     --cream: #f5f0eb;
+    /* Brand gold — RGB channels so Tailwind opacity modifiers work */
+    --gold-rgb: 251 179 22;
+    --gold-dark-rgb: 229 160 16;
+    --gold: #FBB316;
+    --gold-dark: #e5a010;
   }
 
   html {
@@ -13,7 +84,7 @@
 
   body {
     @apply bg-[#0a0a0a] text-white antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Century Gothic', 'Century Gothic Paneuropean', CenturyGothic, AppleGothic, sans-serif;
   }
 
   /* Hide default cursor on desktop — custom cursor takes over */
@@ -46,13 +117,30 @@
     background-color: var(--cream);
   }
 
+  /* ── Brand gold utilities ─────────────────────────────────────────── */
+  .text-gold          { color: #FBB316; }
+  .text-gold\/70      { color: rgb(251 179 22 / 0.7); }
+  .text-gold\/50      { color: rgb(251 179 22 / 0.5); }
+  .bg-gold            { background-color: #FBB316; }
+  .bg-gold-dark       { background-color: #e5a010; }
+  .bg-gold\/5         { background-color: rgb(251 179 22 / 0.05); }
+  .border-gold        { border-color: #FBB316; }
+  .border-gold\/40    { border-color: rgb(251 179 22 / 0.4); }
+  .from-gold\/40      { --tw-gradient-from: rgb(251 179 22 / 0.4); }
+  .bg-gold\/20        { background-color: rgb(251 179 22 / 0.2); }
+
+  /* hover variants */
+  .hover\:bg-gold-dark:hover  { background-color: #e5a010; }
+  .hover\:border-gold:hover   { border-color: #FBB316; }
+  .hover\:bg-gold\/5:hover    { background-color: rgb(251 179 22 / 0.05); }
+
   /* More generous whitespace — luxury lives in empty space */
   .section-padding {
     @apply py-24 md:py-36 lg:py-44;
   }
 
   .container-custom {
-    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-16;
+    @apply w-full mx-auto px-6 sm:px-10 lg:px-16 2xl:px-20;
   }
 
 #slide{

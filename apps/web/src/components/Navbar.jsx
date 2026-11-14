@@ -4,251 +4,219 @@ import { throttle } from '../utils/throttle'
 import t from '../utils/translations'
 import useSettings from '../lib/useSettings'
 import SearchModal from './SearchModal'
-import { useTheme } from '../context/ThemeContext'
 
 const SCROLL_THROTTLE_MS = 120
-
-// Section order matches page layout:
-// works → about → contact
 const ALL_SECTIONS = ['home', 'works', 'about', 'contact']
 
-const Navbar = ({ isScrolled, lang, setLang }) => {
+const Navbar = ({ isScrolled, lang }) => {
   const [activeSection, setActiveSection] = useState('home')
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme()
+  const [searchOpen, setSearchOpen]       = useState(false)
+  const [mobileOpen, setMobileOpen]       = useState(false)
 
+  const tx       = t[lang].nav
+  const settings = useSettings()
+  const disciplines = settings.disciplines || tx.discipline
+
+  // Active section tracker
   useEffect(() => {
-    const handleScroll = () => {
+    const handle = throttle(() => {
       const current = ALL_SECTIONS.find(id => {
         const el = document.getElementById(id)
-        if (el) {
-          const rect = el.getBoundingClientRect()
-          return rect.top <= 120 && rect.bottom >= 120
-        }
-        return false
+        if (!el) return false
+        const rect = el.getBoundingClientRect()
+        return rect.top <= 120 && rect.bottom >= 120
       })
       if (current) setActiveSection(current)
-    }
-    const throttledScroll = throttle(handleScroll, SCROLL_THROTTLE_MS)
-    window.addEventListener('scroll', throttledScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', throttledScroll)
+    }, SCROLL_THROTTLE_MS)
+    window.addEventListener('scroll', handle, { passive: true })
+    handle()
+    return () => window.removeEventListener('scroll', handle)
   }, [])
 
-  const scrollToSection = (sectionId) => {
-    const el = document.getElementById(sectionId)
+  // Lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id)
     if (el) {
-      const top = el.getBoundingClientRect().top + window.pageYOffset - 64
+      const top = el.getBoundingClientRect().top + window.pageYOffset - 72
       window.scrollTo({ top, behavior: 'smooth' })
     }
+    setMobileOpen(false)
   }
 
-  const tx = t[lang].nav
-
-  const settings    = useSettings()
-  const disciplines = settings.disciplines || tx.discipline
-  const heroLabel   = settings.hero_label  || tx.label
-
-  // Desktop: all links
-  const desktopLinks = [
-    { name: tx.work,    id: 'works'   },
-    { name: tx.about,   id: 'about'   },
-    { name: tx.contact, id: 'contact' },
+  const links = [
+    { label: tx.work,    id: 'works'   },
+    { label: tx.about,   id: 'about'   },
+    { label: tx.contact, id: 'contact' },
   ]
-
-  // Mobile: shorter list
-  const mobileLinks = [
-    { name: tx.work,    id: 'works'   },
-    { name: tx.about,   id: 'about'   },
-    { name: tx.contact, id: 'contact' },
-  ]
-
-  const NavLink = ({ link }) => {
-    const isActive = activeSection === link.id
-    return (
-      <button
-        key={link.id}
-        onClick={() => scrollToSection(link.id)}
-        className={`relative label-text transition-colors duration-300 whitespace-nowrap group ${
-          isActive ? 'text-white dark:text-white light:text-neutral-900' : 'text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900'
-        }`}
-      >
-        {link.name}
-        <span
-          className={`absolute -bottom-0.5 left-0 h-px bg-white dark:bg-white light:bg-neutral-900 transition-all duration-300 ${
-            isActive
-              ? 'w-full opacity-100'
-              : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-40'
-          }`}
-        />
-      </button>
-    )
-  }
-
-  const LangToggle = () => (
-    <button
-      onClick={() => setLang(l => l === 'en' ? 'am' : 'en')}
-      aria-label="Toggle language"
-      className="flex items-center gap-0.5 xs:gap-1 border border-neutral-800 dark:border-neutral-800 light:border-neutral-300 hover:border-neutral-600 dark:hover:border-neutral-600 light:hover:border-neutral-400 transition-colors px-1.5 xs:px-2.5 py-1 flex-shrink-0"
-    >
-      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'en' ? '!text-white dark:!text-white light:!text-neutral-900' : '!text-neutral-600 dark:!text-neutral-600 light:!text-neutral-500'}`}>
-        EN
-      </span>
-      <span className="label-text text-[9px] xs:text-[10px] text-neutral-700 dark:text-neutral-700 light:text-neutral-400">/</span>
-      <span className={`label-text text-[9px] xs:text-[10px] transition-colors duration-200 ${lang === 'am' ? '!text-white dark:!text-white light:!text-neutral-900' : '!text-neutral-600 dark:!text-neutral-600 light:!text-neutral-500'}`}>
-        አማ
-      </span>
-    </button>
-  )
-
-  const ThemeToggle = () => (
-    <button
-      onClick={toggleTheme}
-      aria-label="Toggle theme"
-      className="text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900 transition-colors flex-shrink-0"
-    >
-      {theme === 'dark' ? (
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ) : (
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      )}
-    </button>
-  )
 
   return (
-    <motion.nav
-      initial={{ y: -60, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-[#0a0a0a]/95 dark:bg-[#0a0a0a]/95 light:bg-white/95 backdrop-blur-md' : 'bg-transparent'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-        <div className="flex items-center justify-between h-14 md:h-20">
+    <>
+      <motion.nav
+        initial={{ y: -72, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? 'bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/[0.06]'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="w-full px-6 sm:px-10 lg:px-16 2xl:px-20">
+          <div className="flex items-center justify-between h-16 md:h-20">
 
-          {/* Logo */}
-          <button
-            onClick={() => scrollToSection('home')}
-            aria-label="Go to home"
-            className="flex-shrink-0 flex flex-col items-start gap-0.5 min-w-0"
-          >
-            <img
-              src="/images/Asset 1.svg"
-              alt="Awra Designs"
-              className="h-5 xs:h-6 md:h-8 w-auto"
-              loading="eager"
-              fetchpriority="high"
-            />
-            <span className="hidden md:block label-text text-[9px] tracking-[0.25em] text-neutral-600">
-              {disciplines}
-            </span>
-          </button>
-
-          {/* ── Desktop nav (md+): all links ─────────────────────────────── */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-8 flex-shrink-0">
-            {desktopLinks.map(link => <NavLink key={link.id} link={link} />)}
+            {/* ── Logo ── */}
             <button
-              onClick={() => setSearchOpen(true)}
-              className="text-neutral-500 hover:text-white transition-colors"
-              aria-label="Search"
+              onClick={() => scrollToSection('home')}
+              aria-label="Go to home"
+              className="flex-shrink-0 flex flex-col items-start gap-0.5"
             >
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <img
+                src="/Logo.svg"
+                alt="Awra Designs"
+                className="h-7 md:h-9 lg:h-10 w-auto"
+                loading="eager"
+                fetchpriority="high"
+              />
             </button>
-            <ThemeToggle />
-            <LangToggle />
-          </div>
 
-          {/* ── Mobile nav (< md): hamburger menu ───────────────────────── */}
-          <div className="flex md:hidden items-center gap-3 xs:gap-4 flex-shrink-0">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="text-neutral-500 hover:text-white transition-colors"
-              aria-label="Search"
-            >
-              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-            <ThemeToggle />
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-neutral-500 hover:text-white transition-colors"
-              aria-label="Menu"
-            >
-              {mobileMenuOpen ? (
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-            <LangToggle />
-          </div>
-
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 md:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-            <motion.div
-              className="absolute right-0 top-0 bottom-0 w-64 bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-white border-l border-neutral-800 dark:border-neutral-800 light:border-neutral-200 flex flex-col"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            >
-              <div className="p-4 border-b border-neutral-900 dark:border-neutral-900 light:border-neutral-200 flex items-center justify-between">
-                <span className="text-sm font-medium text-white dark:text-white light:text-neutral-900">Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-neutral-500 dark:text-neutral-500 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900">
-                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <nav className="flex-1 p-4 space-y-4">
-                {mobileLinks.map(link => (
+            {/* ── Desktop nav ── */}
+            <div className="hidden md:flex items-center gap-8 lg:gap-10">
+              {links.map(({ label, id }) => {
+                const isActive = activeSection === id
+                return (
                   <button
-                    key={link.id}
-                    onClick={() => { scrollToSection(link.id); setMobileMenuOpen(false) }}
-                    className={`text-left w-full py-2 text-sm transition-colors ${
-                      activeSection === link.id ? 'text-white dark:text-white light:text-neutral-900' : 'text-neutral-400 dark:text-neutral-400 light:text-neutral-600 hover:text-white dark:hover:text-white light:hover:text-neutral-900'
+                    key={id}
+                    onClick={() => scrollToSection(id)}
+                    className={`relative label-text transition-colors duration-300 whitespace-nowrap group ${
+                      isActive ? 'text-gold' : 'text-neutral-400 hover:text-white'
                     }`}
                   >
-                    {link.name}
+                    {label}
+                    <span className={`absolute -bottom-0.5 left-0 h-px bg-gold transition-all duration-300 ${
+                      isActive ? 'w-full opacity-100' : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-50'
+                    }`} />
                   </button>
-                ))}
-              </nav>
-              <div className="p-4 border-t border-neutral-900 dark:border-neutral-900 light:border-neutral-200 flex items-center gap-4">
-                <ThemeToggle />
-                <LangToggle />
-              </div>
-            </motion.div>
+                )
+              })}
+            </div>
+
+            {/* ── Desktop right: search + CTA ── */}
+            <div className="hidden md:flex items-center gap-4">
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="text-neutral-500 hover:text-white transition-colors p-1"
+              >
+                <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gold text-[#0a0a0a] text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 hover:bg-gold-dark"
+              >
+                Get in Touch
+                <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </button>
+            </div>
+
+            {/* ── Mobile right: search + hamburger ── */}
+            <div className="flex md:hidden items-center gap-4">
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="text-neutral-400 hover:text-white transition-colors"
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+                className="text-neutral-400 hover:text-white transition-colors"
+              >
+                <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h10M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </motion.nav>
+
+      {/* ── Full-screen mobile menu ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="fixed inset-0 z-[60] md:hidden flex flex-col bg-[#0a0a0a]"
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-6 h-16 border-b border-white/[0.06]">
+              <img src="/Logo.svg" alt="Awra Designs" className="h-7 w-auto" />
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+                className="text-neutral-400 hover:text-white transition-colors"
+              >
+                <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Nav links */}
+            <nav className="flex-1 flex flex-col justify-center px-8 gap-2">
+              {links.map(({ label, id }, i) => (
+                <motion.button
+                  key={id}
+                  onClick={() => scrollTo(id)}
+                  initial={{ opacity: 0, x: 24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.35, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  className={`text-left py-4 border-b border-white/[0.06] font-display text-3xl font-medium transition-colors ${
+                    activeSection === id ? 'text-gold' : 'text-neutral-300 hover:text-white'
+                  }`}
+                >
+                  {label}
+                </motion.button>
+              ))}
+            </nav>
+
+            {/* Bottom CTA */}
+            <div className="px-8 pb-10">
+              <motion.button
+                onClick={() => scrollToSection('contact')}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.25 }}
+                className="w-full py-4 bg-gold text-[#0a0a0a] text-xs font-bold tracking-widest uppercase hover:bg-gold-dark transition-colors"
+              >
+                Get in Touch →
+              </motion.button>
+              <p className="label-text text-neutral-700 text-center mt-4">
+                {disciplines}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Search Modal */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} lang={lang} />
-    </motion.nav>
+    </>
   )
 }
 

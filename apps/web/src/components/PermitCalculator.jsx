@@ -1,40 +1,40 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { BUILDING_USES, STRUCTURAL_CLASSIFICATIONS, FLOOR_COUNTS, BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
+import { BASEMENT_OPTIONS, REGULATORY_INFO } from '../utils/permitFees'
 import { calculatePermitFee, formatETB, generateCalculationSummary } from '../utils/permitCalculator'
 import { FloorPlanFragment, DrawingRef } from './ArchDetails'
 import t from '../utils/translations'
 
 const labelClass = 'block text-[10px] uppercase tracking-[0.18em] text-neutral-500 font-medium mb-1.5'
 
-// ── Custom dropdown — fully contained, no native select ───────────────────
+// ── Custom dropdown ────────────────────────────────────────────────────────
 function Dropdown({ id, label, value, onChange, options, error }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const selected = options.find(o => o.value === value)
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return
     const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
     document.addEventListener('mousedown', fn)
     document.addEventListener('touchstart', fn)
-    return () => { document.removeEventListener('mousedown', fn); document.removeEventListener('touchstart', fn) }
+    return () => {
+      document.removeEventListener('mousedown', fn)
+      document.removeEventListener('touchstart', fn)
+    }
   }, [open])
 
   return (
     <div ref={ref} className="relative">
       <label htmlFor={id} className={labelClass}>{label}</label>
-
-      {/* Trigger */}
       <button
         id={id}
         type="button"
         onClick={() => setOpen(o => !o)}
         className={`w-full flex items-center justify-between bg-[#0a0a0a] border text-sm px-4 py-3 text-left transition-colors
           ${open ? 'border-white/30' : error ? 'border-red-500/60' : 'border-white/10 hover:border-white/20'}
-          ${selected?.disabled ? 'text-neutral-600' : 'text-white'}`}
+          text-white`}
       >
         <span className="truncate">{selected?.label || 'Select…'}</span>
         <svg
@@ -45,7 +45,6 @@ function Dropdown({ id, label, value, onChange, options, error }) {
         </svg>
       </button>
 
-      {/* Options list — renders inline below, never overflows */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -59,14 +58,11 @@ function Dropdown({ id, label, value, onChange, options, error }) {
               <button
                 key={opt.value}
                 type="button"
-                disabled={opt.disabled}
-                onClick={() => { if (!opt.disabled) { onChange(opt.value); setOpen(false) } }}
+                onClick={() => { onChange(opt.value); setOpen(false) }}
                 className={`w-full text-left px-4 py-3 text-sm transition-colors border-b border-white/5 last:border-b-0
-                  ${opt.disabled
-                    ? 'text-neutral-600 cursor-not-allowed'
-                    : opt.value === value
-                      ? 'text-white bg-white/10'
-                      : 'text-neutral-300 hover:text-white hover:bg-white/5'
+                  ${opt.value === value
+                    ? 'text-white bg-white/10'
+                    : 'text-neutral-300 hover:text-white hover:bg-white/5'
                   }`}
               >
                 {opt.label}
@@ -103,80 +99,63 @@ function AnimatedNumber({ value }) {
 // ── Fee row ───────────────────────────────────────────────────────────────
 function FeeRow({ label, amount }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-white/5">
-      <span className="text-sm text-neutral-400">{label}</span>
-      <span className="text-sm text-white font-medium tabular-nums">ETB <AnimatedNumber value={amount} /></span>
+    <div className="flex items-start justify-between py-3 border-b border-white/5 gap-4">
+      <span className="text-sm text-neutral-400 leading-snug">{label}</span>
+      <span className="text-sm text-white font-medium tabular-nums whitespace-nowrap">ETB <AnimatedNumber value={amount} /></span>
     </div>
   )
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+// ── Main component ────────────────────────────────────────────────────────
 export default function PermitCalculator({ inline = false, lang = 'en', onClose }) {
   const { ref, inView } = useInView({ threshold: 0.05, triggerOnce: !inline })
   const tx = t[lang].permit
 
-  // Form state
-  const [buildingUse,           setBuildingUse]           = useState('residential')
-  const [structuralClassification, setStructuralClassification] = useState('without_rc')
-  const [floorArea,              setFloorArea]              = useState('')
-  const [floorCount,             setFloorCount]             = useState('0')
-  const [basement,               setBasement]               = useState('0')
-  const [requirePlanningConsent, setRequirePlanningConsent] = useState(false)
-  const [errors,                 setErrors]                 = useState({})
-  const [result,                 setResult]                 = useState(null)
-  const [calculated,             setCalculated]             = useState(false)
+  // Form state — gPlus is the number after "G+", stored as string for input
+  const [kare,       setKare]       = useState('')
+  const [basement,   setBasement]   = useState('none')
+  const [gPlusInput, setGPlusInput] = useState('')   // raw string from input
+  const [errors,     setErrors]     = useState({})
+  const [result,     setResult]     = useState(null)
+  const [calculated, setCalculated] = useState(false)
 
-  // Live calculation whenever inputs change
+  // Derive gPlus number; G+0 is valid so we check !== ''
+  const parsedGPlus = gPlusInput === '' ? null : parseInt(gPlusInput, 10)
+
+  // Live recalculation whenever inputs change after first calculate
   useEffect(() => {
     if (!calculated) return
-    const area = parseFloat(floorArea)
-    const floors = parseInt(floorCount, 10)
-    const basements = parseInt(basement, 10)
-    const res = calculatePermitFee({ 
-      buildingUse, 
-      structuralClassification, 
-      floorArea: area, 
-      floorCount: floors, 
-      basement: basements, 
-      requirePlanningConsent 
-    })
+    const k = parseFloat(kare)
+    if (!k || k <= 0 || parsedGPlus === null || isNaN(parsedGPlus) || parsedGPlus < 0) return
+    const res = calculatePermitFee({ kare: k, basement, gPlus: parsedGPlus })
     setResult(res)
-  }, [buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent, calculated])
+  }, [kare, basement, gPlusInput, calculated]) // eslint-disable-line
 
   const validate = useCallback(() => {
     const e = {}
-    const area = parseFloat(floorArea)
-    if (!floorArea || isNaN(area) || area <= 0) {
-      e.floorArea = lang === 'am' ? 'የሚስማማ ቦፍስ ቁጥር ያስግብ' : 'Enter a valid floor area (m²)'
+    const k = parseFloat(kare)
+    if (!kare || isNaN(k) || k <= 0) {
+      e.kare = lang === 'am' ? 'ትክክለኛ ቁጥር ያስገቡ' : 'Enter a valid area in m²'
+    }
+    if (gPlusInput === '' || isNaN(parsedGPlus) || parsedGPlus < 0) {
+      e.gPlus = lang === 'am' ? 'ትክክለኛ ፎቅ ቁጥር ያስገቡ' : 'Enter a valid floor number (0 for G+0)'
     }
     setErrors(e)
     return Object.keys(e).length === 0
-  }, [floorArea, lang])
+  }, [kare, gPlusInput, parsedGPlus, lang])
 
   const handleCalculate = () => {
     if (!validate()) return
-    const area = parseFloat(floorArea)
-    const floors = parseInt(floorCount, 10)
-    const basements = parseInt(basement, 10)
-    const res = calculatePermitFee({ 
-      buildingUse, 
-      structuralClassification, 
-      floorArea: area, 
-      floorCount: floors, 
-      basement: basements, 
-      requirePlanningConsent 
-    })
+    const k = parseFloat(kare)
+    const res = calculatePermitFee({ kare: k, basement, gPlus: parsedGPlus })
     setResult(res)
     setCalculated(true)
   }
 
   const handleReset = () => {
-    setBuildingUse('residential')
-    setStructuralClassification('without_rc')
-    setFloorArea('')
-    setFloorCount('0')
-    setBasement('0')
-    setRequirePlanningConsent(false)
+    setKare('')
+    setBasement('none')
+    setGPlusInput('')
     setErrors({})
     setResult(null)
     setCalculated(false)
@@ -184,52 +163,39 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
 
   const handlePrint = () => {
     if (!result) return
-    const summary = generateCalculationSummary(
-      { buildingUse, structuralClassification, floorArea: parseFloat(floorArea), floorCount: parseInt(floorCount, 10), basement: parseInt(basement, 10), requirePlanningConsent },
-      result
-    )
+    const k = parseFloat(kare)
+    const summary = generateCalculationSummary({ kare: k, basement, gPlus: parsedGPlus }, result)
     const printWindow = window.open('', '_blank')
     printWindow.document.write(`
       <html>
         <head>
-          <title>Building Permit Fee Estimate - ${summary.referenceCode}</title>
+          <title>Building Permit Fee Estimate – ${summary.referenceCode}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
             h1 { color: #333; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            .header { margin-bottom: 30px; }
-            .section { margin: 20px 0; }
             .label { font-weight: bold; color: #666; }
-            .value { color: #000; }
-            .total { font-size: 24px; font-weight: bold; color: #000; margin-top: 20px; }
-            .disclaimer { font-size: 11px; color: #666; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
             .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+            .total { font-size: 24px; font-weight: bold; margin-top: 20px; }
+            .disclaimer { font-size: 11px; color: #666; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>Building Permit Fee Estimate</h1>
-            <p><span class="label">Reference Code:</span> <span class="value">${summary.referenceCode}</span></p>
-            <p><span class="label">Date:</span> <span class="value">${summary.date}</span></p>
-          </div>
-          <div class="section">
-            <p><span class="label">Building Use:</span> <span class="value">${summary.buildingUse}</span></p>
-            <p><span class="label">Structural Classification:</span> <span class="value">${summary.structuralClassification}</span></p>
-            <p><span class="label">Total Floor Area:</span> <span class="value">${summary.totalFloorArea.toLocaleString('en-US')} m²</span></p>
-            <p><span class="label">Floor Count:</span> <span class="value">${summary.floorCount}</span></p>
-            <p><span class="label">Basement Levels:</span> <span class="value">${summary.basement}</span></p>
-            <p><span class="label">Construction Rate:</span> <span class="value">${summary.constructionRate.toLocaleString('en-US')} ETB/m²</span></p>
-            <p><span class="label">Estimated Construction Cost:</span> <span class="value">ETB ${summary.projectEstimate.toLocaleString('en-US')}</span></p>
-          </div>
-          <div class="section">
-            <h2>Fee Breakdown</h2>
-            ${summary.breakdown.map(item => `
-              <div class="row">
-                <span>${item.label}</span>
-                <span>${item.amount.toLocaleString('en-US')}</span>
-              </div>
-            `).join('')}
-            <div class="total">Total Payable: ETB ${summary.totalPayable.toLocaleString('en-US')}</div>
-          </div>
+          <h1>Building Permit Fee Estimate</h1>
+          <p><span class="label">Reference:</span> ${summary.referenceCode}</p>
+          <p><span class="label">Date:</span> ${summary.date}</p>
+          <p><span class="label">Floor Area (Kare):</span> ${summary.kare.toLocaleString('en-US')} m²</p>
+          <p><span class="label">Building Height:</span> G+${summary.gPlus} (${summary.buildingType})</p>
+          <p><span class="label">Total Floors:</span> ${summary.totalFloors}</p>
+          <p><span class="label">Ground Rate:</span> ${summary.groundRate.toLocaleString('en-US')} ETB/m²</p>
+          <p><span class="label">Basement:</span> ${summary.basement}</p>
+          <h2>Fee Breakdown</h2>
+          ${summary.breakdown.map(item => `
+            <div class="row">
+              <span>${item.label}</span>
+              <span>ETB ${item.amount.toLocaleString('en-US')}</span>
+            </div>
+          `).join('')}
+          <div class="total">Total Estimate: ETB ${summary.total.toLocaleString('en-US')}</div>
           <div class="disclaimer">
             <p><strong>Source:</strong> ${summary.source}</p>
             <p>${summary.disclaimer}</p>
@@ -242,35 +208,24 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
   }
 
   const handleConsultation = () => {
-    // Build prefill message
+    const k = parseFloat(kare)
+    const basementOption = BASEMENT_OPTIONS.find(b => b.value === basement)
     const lines = result ? [
-      `Building Use: ${BUILDING_USES.find(b => b.value === buildingUse)?.label}`,
-      `Structural Classification: ${STRUCTURAL_CLASSIFICATIONS.find(s => s.value === structuralClassification)?.label}`,
-      `Total Floor Area: ${floorArea} m²`,
-      `Floor Count: ${floorCount}`,
-      `Basement Levels: ${basement}`,
+      `Floor Area (Kare): ${k.toLocaleString('en-US')} m²`,
+      `Building Height: G+${parsedGPlus} — ${getGroundLabel(parsedGPlus)}`,
+      `Basement: ${basementOption?.label}`,
       ``,
-      `Estimated Construction Cost: ${formatETB(result.projectEstimate)}`,
-      `Plan Review Fee: ${formatETB(result.planReviewFee)}`,
-      `Plan Approval Fee: ${formatETB(result.planApprovalFee)}`,
-      requirePlanningConsent ? `Planning Consent Fee: ${formatETB(result.planningConsentFee)}` : '',
-      ``,
-      `Total Payable: ${formatETB(result.totalPayable)}`,
-    ].filter(Boolean).join('\n') : ''
+      `Total Estimate: ${formatETB(result.total)}`,
+    ].join('\n') : ''
 
-    // Fire the prefill event
     const prefillData = {
       message: lines,
       subject: 'Building Permit Consultation',
-      permitData: { buildingUse, structuralClassification, floorArea, floorCount, basement, requirePlanningConsent, result },
+      permitData: { kare, gPlus: parsedGPlus, basement, result },
     }
     sessionStorage.setItem('_permit_prefill', JSON.stringify(prefillData))
     window.dispatchEvent(new CustomEvent('prefill-contact', { detail: prefillData }))
-
-    // Close modal
     onClose?.()
-
-    // Scroll to contact
     const el = document.getElementById('contact')
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -279,9 +234,8 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
     <section
       id="permit-calculator"
       ref={ref}
-      className={`relative bg-[#0a0a0a] overflow-hidden ${inline ? '' : ''}`}
+      className="relative bg-[#0a0a0a] overflow-hidden"
     >
-      {/* Floor plan fragment — decorative */}
       {!inline && <FloorPlanFragment opacity={0.02} className="w-96 h-72 top-0 right-0 hidden xl:block" />}
       {!inline && <DrawingRef text="A-103"   className="top-4 right-6 hidden lg:block" opacity={0.07} />}
       {!inline && <DrawingRef text="CALC-01" className="bottom-4 left-6 hidden lg:block" opacity={0.06} />}
@@ -301,7 +255,9 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
             {tx.heading}<br />{tx.subheading}
           </h2>
           <p className="text-neutral-500 text-sm mt-4 max-w-md leading-relaxed">
-            Calculate your building permit fees based on official Ethiopian and Addis Ababa regulations.
+            {lang === 'am'
+              ? 'የህንፃ ፈቃድ ክፍያ ወጪ ይሰሉ።'
+              : 'Estimate your building permit fee based on floor area, basement level, and number of floors.'}
           </p>
         </motion.div>
 
@@ -314,79 +270,68 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-5"
           >
-            {/* Building Use */}
-            <Dropdown
-              id="buildingUse"
-              label="Building Use/Type"
-              value={buildingUse}
-              onChange={setBuildingUse}
-              options={BUILDING_USES.map(t => ({ value: t.value, label: t.label }))}
-            />
 
-            {/* Structural Classification */}
-            <Dropdown
-              id="structuralClassification"
-              label="Structural Classification"
-              value={structuralClassification}
-              onChange={setStructuralClassification}
-              options={STRUCTURAL_CLASSIFICATIONS.map(s => ({ value: s.value, label: s.label }))}
-            />
-
-            {/* Floor Area */}
+            {/* 1. Kare */}
             <div>
-              <label htmlFor="floorArea" className={labelClass}>Total Floor Area (m²)</label>
+              <label htmlFor="kare" className={labelClass}>
+                {lang === 'am' ? 'ካሬ (m²)' : 'Floor Area – Kare (m²)'}
+              </label>
               <input
-                id="floorArea"
+                id="kare"
                 type="number"
                 min="1"
                 step="1"
-                value={floorArea}
-                onChange={e => setFloorArea(e.target.value)}
+                value={kare}
+                onChange={e => setKare(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCalculate()}
-                placeholder="e.g. 200"
+                placeholder={lang === 'am' ? 'ለምሳሌ 200' : 'e.g. 200'}
                 className={`w-full bg-white/5 border text-white text-sm px-4 py-3 focus:outline-none focus:border-white/30 transition-colors placeholder-neutral-600 rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                  ${errors.floorArea ? 'border-red-500/60' : 'border-white/10'}`}
+                  ${errors.kare ? 'border-red-500/60' : 'border-white/10'}`}
               />
-              {errors.floorArea && <p className="mt-1 text-[10px] text-red-400">{errors.floorArea}</p>}
+              {errors.kare && <p className="mt-1 text-[10px] text-red-400">{errors.kare}</p>}
             </div>
 
-            {/* Floor Count */}
-            <Dropdown
-              id="floorCount"
-              label="Number of Floors Above Ground"
-              value={floorCount}
-              onChange={setFloorCount}
-              options={FLOOR_COUNTS.map(f => ({ value: String(f.value), label: f.label }))}
-            />
-
-            {/* Basement */}
+            {/* 2. Basement */}
             <Dropdown
               id="basement"
-              label={tx.basement}
+              label={lang === 'am' ? 'የምድር ቤት ብዛት' : 'Basement'}
               value={basement}
               onChange={setBasement}
-              options={BASEMENT_OPTIONS.map(b => ({ value: String(b.value), label: b.label }))}
+              options={BASEMENT_OPTIONS.map(b => ({ value: b.value, label: b.label }))}
             />
 
-            {/* Planning Consent */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="requirePlanningConsent"
-                checked={requirePlanningConsent}
-                onChange={e => setRequirePlanningConsent(e.target.checked)}
-                className="w-4 h-4 bg-white/10 border border-white/20 rounded-sm"
-              />
-              <label htmlFor="requirePlanningConsent" className="text-sm text-neutral-400">
-                Require Planning Consent (+300 ETB)
+            {/* 3. Number of Floors — G+ prefix */}
+            <div>
+              <label htmlFor="gPlus" className={labelClass}>
+                {lang === 'am' ? 'የፎቅ ብዛት (G+)' : 'Number of Floors (G+)'}
               </label>
+              <div className={`flex items-center border transition-colors
+                ${errors.gPlus ? 'border-red-500/60' : 'border-white/10 focus-within:border-white/30'}`}
+              >
+                {/* Static G+ prefix */}
+                <span className="px-4 py-3 text-sm text-neutral-400 bg-white/[0.04] border-r border-white/10 select-none whitespace-nowrap">
+                  G+
+                </span>
+                <input
+                  id="gPlus"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={gPlusInput}
+                  onChange={e => setGPlusInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleCalculate()}
+                  placeholder="0"
+                  className="flex-1 bg-white/5 text-white text-sm px-4 py-3 focus:outline-none placeholder-neutral-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              {errors.gPlus && <p className="mt-1 text-[10px] text-red-400">{errors.gPlus}</p>}
             </div>
 
-            {/* Buttons */}
+            {/* Action buttons */}
             <div className="flex flex-wrap gap-3 pt-2">
               <button
                 onClick={handleCalculate}
-                className="group inline-flex items-center gap-2.5 px-6 py-3 bg-white text-[#0a0a0a] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-neutral-200"
+                className="group inline-flex items-center gap-2.5 px-6 py-3 bg-gold text-[#0a0a0a] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-gold-dark"
               >
                 {tx.calculate}
                 <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
@@ -420,7 +365,6 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
               )}
             </div>
 
-            {/* Disclaimer */}
             <p className="text-neutral-700 text-[10px] leading-relaxed max-w-md pt-2">
               {tx.disclaimer}
             </p>
@@ -442,7 +386,7 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="relative border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 md:p-8"
                 >
-                  {/* CAD corner markers on result card */}
+                  {/* CAD corner markers */}
                   <span className="absolute top-3 left-3 pointer-events-none opacity-[0.12]">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="10,0 0,0 0,10" stroke="#fff" strokeWidth="0.8"/></svg>
                   </span>
@@ -464,24 +408,30 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
 
                   {/* Total */}
                   <div className="mt-6 pt-6 border-t border-white/10">
-                    <p className="label-text mb-2">Total Payable</p>
-                    <div className="font-display text-4xl md:text-5xl font-medium text-white tabular-nums">
-                      ETB <AnimatedNumber value={result.totalPayable} />
+                    <p className="label-text mb-2">
+                      {lang === 'am' ? 'ጠቅላላ ወጪ ግምት' : 'Total Cost Estimate'}
+                    </p>
+                    <div className="font-display text-4xl md:text-5xl font-medium text-gold tabular-nums">
+                      ETB <AnimatedNumber value={result.total} />
                     </div>
                   </div>
 
-                  {/* Reference info */}
+                  {/* Summary info */}
                   <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">Reference Code</span>
-                      <span className="label-text text-neutral-400 font-mono">
-                        BLD-{String(result.totalFloorArea).padStart(4,'0')}-{Math.floor(Math.random() * 9000) + 1000}
+                      <span className="label-text text-neutral-600">Building Height</span>
+                      <span className="label-text text-neutral-400">
+                        G+{parsedGPlus} — {getGroundLabel(parsedGPlus)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="label-text text-neutral-600">Construction Rate</span>
+                      <span className="label-text text-neutral-600">Total Floors</span>
+                      <span className="label-text text-neutral-400">{result.totalFloors}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="label-text text-neutral-600">Ground Rate</span>
                       <span className="label-text text-neutral-400">
-                        {result.constructionRate.toLocaleString('en-US')} ETB/m²
+                        {result.groundRate.toLocaleString('en-US')} ETB/m²
                       </span>
                     </div>
                   </div>
@@ -490,8 +440,7 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
                     {tx.needCompleteDesign}
                   </p>
 
-                  {/* Regulatory transparency */}
-                  <div className="mt-6 pt-4 border-t border-white/5 space-y-2">
+                  <div className="mt-4 pt-4 border-t border-white/5 space-y-1">
                     <p className="text-neutral-700 text-[10px] leading-relaxed">
                       <span className="text-neutral-500">{tx.source}:</span> {REGULATORY_INFO.source}
                     </p>
@@ -508,7 +457,6 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
                   exit={{ opacity: 0 }}
                   className="border border-white/5 bg-white/[0.02] p-8 flex flex-col items-center justify-center min-h-[280px] text-center"
                 >
-                  {/* Blueprint corner decorations */}
                   <svg className="w-24 h-24 text-neutral-800 mb-6" viewBox="0 0 96 96" fill="none" stroke="currentColor" strokeWidth="0.7">
                     <rect x="8" y="8" width="80" height="80" strokeDasharray="3,4"/>
                     <line x1="8" y1="48" x2="88" y2="48" strokeDasharray="2,4" opacity="0.5"/>
@@ -524,6 +472,7 @@ export default function PermitCalculator({ inline = false, lang = 'en', onClose 
               )}
             </AnimatePresence>
           </motion.div>
+
         </div>
       </div>
     </section>

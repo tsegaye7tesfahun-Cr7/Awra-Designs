@@ -182,13 +182,13 @@ export default function QuoteModal({ isOpen, onClose, lang = 'en' }) {
                       onClick={() => { setForm(p => ({ ...p, service: svc })); setTouched(p => ({ ...p, service: true })) }}
                       className={`relative px-4 py-2.5 label-text transition-colors duration-200 whitespace-nowrap ${
                         form.service === svc
-                          ? 'text-white'
+                          ? 'text-gold'
                           : 'text-neutral-600 hover:text-neutral-300'
                       }`}
                     >
                       {svc}
                       {form.service === svc && (
-                        <span className="absolute bottom-0 left-0 right-0 h-px bg-white" />
+                        <span className="absolute bottom-0 left-0 right-0 h-px bg-gold" />
                       )}
                     </button>
                   ))}
@@ -246,7 +246,7 @@ export default function QuoteModal({ isOpen, onClose, lang = 'en' }) {
                 <button
                   type="submit"
                   disabled={status === 'sending' || status === 'sent'}
-                  className="px-6 py-2.5 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide hover:bg-[#f5f0eb] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-gold text-[#0a0a0a] text-xs font-medium tracking-wide hover:bg-gold-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {status === 'sending' ? t.sending : t.send}
                 </button>

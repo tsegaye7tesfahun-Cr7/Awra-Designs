@@ -215,7 +215,7 @@ export default function Contact({ lang = 'en' }) {
           <a
             href={waHref}
             target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide mb-6"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gold text-[#0a0a0a] text-xs font-medium tracking-wide mb-6"
           >
             <WaIcon />
             <AnimatePresence mode="wait">
@@ -275,7 +275,7 @@ export default function Contact({ lang = 'en' }) {
             </div>
             <div className="flex items-center gap-4">
               <button type="submit" disabled={isSubmitting || !isFormValid}
-                className="px-6 py-2.5 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide hover:bg-cream transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                className="px-6 py-2.5 bg-gold text-[#0a0a0a] text-xs font-medium tracking-wide hover:bg-gold-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                 {isSubmitting ? t.sending : t.sendShort}
               </button>
               {submitStatus === 'success' && <span className="text-xs text-neutral-400">{t.sentShort}</span>}
@@ -380,7 +380,7 @@ export default function Contact({ lang = 'en' }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-4 pt-1">
                   <button type="submit" disabled={isSubmitting || !isFormValid}
-                    className="px-7 py-3 bg-white text-[#0a0a0a] text-sm font-medium tracking-wide hover:bg-cream transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                    className="px-7 py-3 bg-gold text-[#0a0a0a] text-sm font-medium tracking-wide hover:bg-gold-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                     {isSubmitting ? t.sending : t.send}
                   </button>
                   {submitStatus === 'success' && <span className="text-sm text-neutral-400">{t.sent}</span>}

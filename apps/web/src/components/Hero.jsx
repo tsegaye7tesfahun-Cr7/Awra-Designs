@@ -5,8 +5,6 @@ import t from '../utils/translations'
 import QuoteModal from './QuoteModal'
 import PermitCalculator from './PermitCalculator'
 import { trackView } from '../lib/analytics'
-import { SheetRef } from './ArchDetails'
-import ArchBlueprint from './ArchBlueprint'
 
 const Hero = ({ lang = 'en' }) => {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
@@ -35,22 +33,25 @@ const Hero = ({ lang = 'en' }) => {
       <section
         id="home"
         ref={ref}
-        className="relative bg-[#0a0a0a] overflow-hidden"
+        className="relative overflow-hidden"
+        style={{ backgroundColor: '#0a0a0a' }}
       >
-        {/* Architectural blueprint illustration — right side, fades toward left */}
-        <ArchBlueprint />
+        {/* Hero background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/BG hero section image.webp')" }}
+          aria-hidden="true"
+        />
+        {/* Dark overlay — keeps text legible */}
+        <div className="absolute inset-0 bg-[#0a0a0a]/70" aria-hidden="true" />
+        {/* Subtle left-side gradient so text pops */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 via-[#0a0a0a]/40 to-transparent" aria-hidden="true" />
 
         {/* Top accent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
 
-        {/* Glow accent */}
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-white/[0.02] blur-3xl pointer-events-none" />
-
-        {/* Drawing reference annotations */}
-        <SheetRef code="A-001" title="HOME" />
-
         <div className="relative z-10 container-custom py-24 md:py-36 lg:py-44">
-          <div className="max-w-4xl">
+          <div className="max-w-2xl">
 
             {/* Eyebrow */}
             <motion.div
@@ -59,7 +60,7 @@ const Hero = ({ lang = 'en' }) => {
               animate={inView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.05 }}
             >
-              <span className="w-6 h-px bg-neutral-600" />
+              <span className="w-6 h-px bg-gold" />
               <span className="label-text">
                 <AnimatePresence mode="wait">
                   <motion.span key={lang} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -88,7 +89,7 @@ const Hero = ({ lang = 'en' }) => {
                 >
                   {tx.headline2}
                 </span>
-                <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] text-cream mt-2">
+                <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] text-gold mt-2">
                   {tx.headline3}
                 </span>
               </motion.h1>
@@ -102,8 +103,8 @@ const Hero = ({ lang = 'en' }) => {
               style={{ originX: 0 }}
               transition={{ duration: 0.7, delay: 0.5 }}
             >
-              <div className="h-px w-8 bg-neutral-700" />
-              <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-neutral-700 to-transparent" />
+              <div className="h-px w-8 bg-gold/60" />
+              <div className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-gold/40 to-transparent" />
             </motion.div>
 
             {/* Proof */}
@@ -129,7 +130,7 @@ const Hero = ({ lang = 'en' }) => {
             >
               <button
                 onClick={() => setQuoteOpen(true)}
-                className="group inline-flex items-center gap-2.5 px-6 py-3 bg-white text-[#0a0a0a] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-cream"
+                className="group inline-flex items-center gap-2.5 px-6 py-3 bg-gold text-[#0a0a0a] text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:bg-gold-dark"
               >
                 <AnimatePresence mode="wait">
                   <motion.span key={lang} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -141,7 +142,7 @@ const Hero = ({ lang = 'en' }) => {
 
               <button
                 onClick={() => setCalculatorOpen(true)}
-                className="group inline-flex items-center gap-2.5 px-6 py-3 border border-neutral-800 text-white text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-neutral-500 hover:bg-neutral-900/60"
+                className="group inline-flex items-center gap-2.5 px-6 py-3 border border-gold/40 text-gold text-xs font-medium tracking-widest uppercase transition-all duration-300 hover:border-gold hover:bg-gold/5"
               >
                 {lang === 'am' ? 'የፍቃድ ክፍያ ማስላት' : 'Permit Calculator'}
                 <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>

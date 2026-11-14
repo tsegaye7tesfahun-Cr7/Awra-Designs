@@ -6,8 +6,8 @@
 
     <!-- Primary SEO -->
     <title>Awra Designs — Architecture & Interior Studio | Addis Ababa</title>
-    <meta name="description" content="Timeless architecture, refined interiors, and thoughtful design. Awra Designs crafts spaces with precision, elegance, and purpose across Addis Ababa, Ethiopia." />
-    <meta name="keywords" content="architecture Ethiopia, interior design Addis Ababa, finishing work Ethiopia, 3D visualization, Awra Designs, residential design, commercial interiors, architectural studio Ethiopia" />
+    <meta name="description" content="Awra Designs crafts timeless architecture, refined interiors, and thoughtful spaces across Addis Ababa and Ethiopia. 120+ projects delivered since 2019." />
+    <meta name="keywords" content="architecture Ethiopia, interior design Addis Ababa, finishing work Ethiopia, 3D visualization, Awra Designs, residential design, commercial interiors, architectural studio Ethiopia, building permit Ethiopia" />
     <meta name="author" content="Awra Designs" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
@@ -29,13 +29,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Awra Designs" />
+    <meta name="application-name" content="Awra Designs" />
     <meta name="format-detection" content="telephone=yes" />
+    <meta name="msapplication-TileColor" content="#0a0a0a" />
+    <meta name="msapplication-config" content="none" />
 
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='400' fill='white'>A.</text></svg>" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
@@ -45,39 +47,47 @@
     <meta property="og:site_name" content="Awra Designs" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:title" content="Awra Designs — Architecture & Interior Studio | Addis Ababa" />
-    <meta property="og:description" content="Timeless architecture, refined interiors, and thoughtful design. Discover spaces crafted with precision, elegance, and purpose." />
+    <meta property="og:description" content="Timeless architecture, refined interiors, and thoughtful design. 120+ spaces completed across Ethiopia since 2019." />
     <meta property="og:image" content="https://awradesigns.com/og-image.jpg" />
     <meta property="og:image:secure_url" content="https://awradesigns.com/og-image.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1024" />
-    <meta property="og:image:height" content="537" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Awra Designs — Architecture & Interior Studio, Addis Ababa, Ethiopia" />
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@awradesigns" />
     <meta name="twitter:title" content="Awra Designs — Architecture & Interior Studio | Addis Ababa" />
-    <meta name="twitter:description" content="Timeless architecture, refined interiors, and thoughtful design. Discover spaces crafted with precision, elegance, and purpose." />
+    <meta name="twitter:description" content="Timeless architecture, refined interiors, and thoughtful design. 120+ spaces completed across Ethiopia." />
     <meta name="twitter:image" content="https://awradesigns.com/og-image.jpg" />
     <meta name="twitter:image:alt" content="Awra Designs — Architecture & Interior Studio, Addis Ababa, Ethiopia" />
 
-    <!-- Font preconnect and preload -->
+    <!-- Preload hero background for LCP -->
+    <link rel="preload" as="image" href="/BG hero section image.webp" fetchpriority="high" />
+
+    <!-- Century Gothic — self-hosted, preload critical weights to prevent FOUT -->
+    <link rel="preload" as="font" type="font/ttf" href="/Century-Gothic-Sans-Font/CenturyGothicRegular.ttf" crossorigin="anonymous" />
+    <link rel="preload" as="font" type="font/ttf" href="/Century-Gothic-Sans-Font/CenturyGothicSemiBold.ttf" crossorigin="anonymous" />
+    <link rel="preload" as="font" type="font/ttf" href="/Century-Gothic-Sans-Font/CenturyGothicBold.ttf" crossorigin="anonymous" />
+
+    <!-- Playfair Display — heading/display font only, non-blocking -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" as="style" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" /></noscript>
 
-    <!-- Structured Data -->
+    <!-- Structured Data — LocalBusiness -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "Awra Designs",
       "alternateName": "Awra Finishing & Interior",
-      "description": "Timeless architecture, refined interiors, and thoughtful design. Awra Designs crafts spaces with precision, elegance, and purpose across Addis Ababa, Ethiopia.",
+      "description": "Architecture, interior design, 3D visualization, finishing works, and branding services in Addis Ababa, Ethiopia.",
       "url": "https://awradesigns.com",
-      "logo": "https://awradesigns.com/images/Asset%201.svg",
-      "image": "https://awradesigns.com/images/Hero%20BG.webp",
+      "logo": "https://awradesigns.com/Logo.svg",
+      "image": "https://awradesigns.com/og-image.jpg",
       "telephone": "+251923814125",
       "email": "info@awradesigns.com",
       "address": {
@@ -90,6 +100,8 @@
         "latitude": "9.1450",
         "longitude": "38.7648"
       },
+      "foundingDate": "2019",
+      "numberOfEmployees": { "@type": "QuantitativeValue", "value": "10" },
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
@@ -100,10 +112,11 @@
         "@type": "OfferCatalog",
         "name": "Design Services",
         "itemListElement": [
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Architecture" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Architecture & Building Design" } },
           { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Interior Design" } },
           { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3D Visualization" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Finishing & Fit-out" } }
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Finishing & Fit-out" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Building Permit Documentation" } }
         ]
       },
       "priceRange": "$$",
@@ -116,15 +129,22 @@
     }
     </script>
 
+    <!-- Structured Data — WebSite -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Awra Designs",
-      "url": "https://awradesigns.com"
+      "url": "https://awradesigns.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://awradesigns.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
 
+    <!-- Structured Data — FAQPage -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -135,54 +155,47 @@
           "name": "What services does Awra Designs offer?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We offer architecture, interior design, 3D visualization, finishing and fit-out, and design consultation services across Addis Ababa and Ethiopia."
+            "text": "We offer architecture, interior design, 3D visualization, finishing and fit-out, building permit documentation, and branding services across Addis Ababa and Ethiopia."
           }
         },
         {
           "@type": "Question",
-          "name": "How long does a project take?",
+          "name": "How do I start a project with Awra Designs?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Timelines depend on scope. Design-only projects typically take 2–4 weeks; full design and implementation ranges from 3–6 months. We provide a detailed schedule during the initial consultation."
+            "text": "Contact us via WhatsApp, phone, or our contact form. We schedule a free initial consultation to understand your vision, requirements, and budget, then provide a tailored proposal."
           }
         },
         {
           "@type": "Question",
-          "name": "Do you offer free consultations?",
+          "name": "How long does a typical project take?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. We offer a free initial consultation to understand your vision, space, and budget before proposing a plan."
+            "text": "A single room typically takes 4–8 weeks. A full apartment or commercial space ranges from 3–6 months. Architecture and permit documentation takes 3–6 weeks."
           }
         },
         {
           "@type": "Question",
-          "name": "What areas do you serve?",
+          "name": "Do you work outside of Addis Ababa?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We are based in Addis Ababa and have completed 100+ projects across Ethiopia, including residential homes, hotels, offices, and commercial spaces."
+            "text": "Yes. While based in Addis Ababa, we take on projects across Ethiopia, coordinating through digital tools and site visits at key milestones."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is your pricing structured?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pricing depends on project type, scale, and complexity. We offer fixed-fee contracts and percentage-of-cost models. Contact us for a free initial estimate."
           }
         }
       ]
     }
     </script>
-
-    <script type="application/ld+json" id="blog-structured-data">
-    {
-      "@context": "https://schema.org",
-      "@type": "Blog",
-      "name": "Awra Designs Blog",
-      "description": "Architecture and design insights from Awra Designs",
-      "url": "https://awradesigns.com/blog",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Awra Designs",
-        "logo": "https://awradesigns.com/images/Asset%201.svg"
-      }
-    }
-    </script>
   </head>
   <body>
-    <!-- Skip to main content link for keyboard navigation -->
+    <!-- Skip to main content — keyboard / screen reader navigation -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded">
       Skip to main content
     </a>

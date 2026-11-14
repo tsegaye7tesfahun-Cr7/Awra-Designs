@@ -34,7 +34,7 @@ function StatCard({ stat, inView, delay }) {
 
   return (
     <div className="bg-[#0a0a0a] px-6 py-8">
-      <div className="font-display text-3xl sm:text-4xl font-medium text-white tabular-nums">
+      <div className="font-display text-3xl sm:text-4xl font-medium text-gold tabular-nums">
         {count}{stat.suffix}
       </div>
       <p className="label-text mt-2 text-neutral-600 leading-snug">{stat.label}</p>
@@ -95,9 +95,9 @@ function DesignProcessSection() {
           >
             {/* Animated connector line */}
             <div className="flex items-center gap-3 mb-4">
-              <span className="label-text text-neutral-700">{step.code}</span>
+              <span className="label-text text-gold/50">{step.code}</span>
               <motion.div
-                className="flex-1 h-px bg-neutral-800"
+                className="flex-1 h-px bg-gold/20"
                 initial={{ scaleX: 0 }}
                 animate={inView ? { scaleX: 1 } : {}}
                 style={{ originX: 0 }}
@@ -189,7 +189,7 @@ function ProjectSlideshow({ covers }) {
             key={i}
             onClick={() => go(i)}
             aria-label={`Slide ${i + 1}`}
-            className={`h-px transition-all duration-300 ${i === active ? 'w-6 bg-white' : 'w-3 bg-white/40 hover:bg-white/70'}`}
+            className={`h-px transition-all duration-300 ${i === active ? 'w-6 bg-gold' : 'w-3 bg-white/40 hover:bg-white/70'}`}
           />
         ))}
       </div>
@@ -243,34 +243,102 @@ export default function About({ lang = 'en' }) {
 
       <div className="section-padding">
         <div className="container-custom">
-          {/* Two-column on desktop: text left, slideshow right */}
-          <div id='slide' className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* Text */}
+            {/* ── Left: editorial text ── */}
             <div>
+              {/* Eyebrow */}
               <FadeIn>
+                <div className="flex items-center gap-3 mb-8">
+                  <span className="w-6 h-px bg-gold" />
+                  <span className="label-text">
+                    <AnimatePresence mode="wait">
+                      <motion.span key={lang} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                        {lang === 'am' ? 'ስለ እኛ' : 'Addis Ababa · Est. 2019'}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </div>
+              </FadeIn>
+
+              {/* Headline */}
+              <FadeIn delay={0.08}>
                 <AnimatePresence mode="wait">
-                  <motion.h2 key={lang} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
-                    className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[3.5rem] xl:text-[4rem] font-medium leading-[1.08] text-white">
-                    {tx.headline1}<br />{tx.headline2}
+                  <motion.h2
+                    key={lang}
+                    initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="font-display font-medium leading-[1.06] tracking-tight"
+                  >
+                    <span className="block text-4xl sm:text-5xl lg:text-[3.2rem] xl:text-[3.8rem] text-white">
+                      {lang === 'am' ? 'ሥነ ሕንፃ' : 'Architecture'}
+                    </span>
+                    <span
+                      className="block text-4xl sm:text-5xl lg:text-[3.2rem] xl:text-[3.8rem] mt-1"
+                      style={{ WebkitTextStroke: '1px rgba(255,255,255,0.2)', color: 'transparent' }}
+                    >
+                      {lang === 'am' ? 'ከልብ የመጣ' : 'with intention.'}
+                    </span>
+                    <span className="block text-3xl sm:text-4xl lg:text-[2.6rem] xl:text-[3rem] text-gold mt-2">
+                      {lang === 'am' ? 'ዘለዓለም የሚቆይ።' : 'Built to last.'}
+                    </span>
                   </motion.h2>
                 </AnimatePresence>
               </FadeIn>
 
-              <FadeIn delay={0.15} className="mt-8 md:mt-10">
+              {/* Rule */}
+              <FadeIn delay={0.18}>
+                <div className="flex items-center gap-4 my-8">
+                  <div className="h-px w-8 bg-gold/60" />
+                  <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-gold/30 to-transparent" />
+                </div>
+              </FadeIn>
+
+              {/* Body */}
+              <FadeIn delay={0.22}>
                 <AnimatePresence mode="wait">
-                  <motion.p key={lang} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
-                    className="text-neutral-400 text-sm sm:text-base leading-relaxed">
-                    {tx.tagline}
+                  <motion.p
+                    key={lang}
+                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="text-neutral-400 text-sm sm:text-base leading-relaxed max-w-md"
+                  >
+                    {lang === 'am'
+                      ? 'እኛ ቤቶችን፣ ቢሮዎችን እና ሕዝባዊ ቦታዎችን — ፋይዳ ያላቸውን ቦታዎች — ሕይወት ያለው ሥነ ሕንፃ ሠርተን እናድሳለን። ከፕላን ፈቃድ እስከ ማጠናቀቂያ ሥራ ድረስ።'
+                      : 'We build homes, offices, and public spaces that are rooted in purpose — where every material choice, every proportion, and every detail serves the people who live and work inside. From permit drawings to finishing, we own every phase.'
+                    }
                   </motion.p>
                 </AnimatePresence>
               </FadeIn>
+
+              {/* Two proof points */}
+              <FadeIn delay={0.3} className="mt-10 grid grid-cols-2 gap-6 border-t border-neutral-800 pt-8">
+                <div>
+                  <p className="font-display text-3xl font-medium text-white tabular-nums">120<span className="text-gold">+</span></p>
+                  <p className="label-text mt-1 text-neutral-500 leading-snug">
+                    {lang === 'am' ? 'ተጠናቅቀዋል' : 'Projects delivered'}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-display text-3xl font-medium text-white tabular-nums">7<span className="text-gold"> yrs</span></p>
+                  <p className="label-text mt-1 text-neutral-500 leading-snug">
+                    {lang === 'am' ? 'የልምድ ዓመታት' : 'Studio experience'}
+                  </p>
+                </div>
+              </FadeIn>
             </div>
 
-            {/* Slideshow — only visible on lg+ */}
-            <FadeIn delay={0.2} className="hidden lg:block">
-              <div id='slide' className="aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-900 ring-1 ring-neutral-800">
+            {/* ── Right: slideshow ── */}
+            <FadeIn delay={0.15} className="hidden lg:flex flex-col gap-4">
+              <div id='slide' className="aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-900 ring-1 ring-neutral-800/60">
                 <ProjectSlideshow covers={covers} />
+              </div>
+              {/* Caption strip */}
+              <div className="flex items-center justify-between px-1">
+                <span className="label-text text-neutral-600">
+                  {lang === 'am' ? 'ከፕሮጀክቶቻችን' : 'Selected projects · Addis Ababa'}
+                </span>
+                <span className="label-text text-gold/60">{covers.length} images</span>
               </div>
             </FadeIn>
 

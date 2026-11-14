@@ -18,10 +18,14 @@ export default {
       colors: {
         cream: '#f5f0eb',
         'off-white': '#faf8f5',
+        // Brand gold — #FBB316
+        // Defined with CSS variable so opacity modifiers (bg-gold/10 etc.) work
+        gold: 'rgb(var(--gold-rgb) / <alpha-value>)',
+        'gold-dark': 'rgb(var(--gold-dark-rgb) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
+        sans: ['Century Gothic', 'Century Gothic Paneuropean', 'CenturyGothic', 'AppleGothic', 'sans-serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.8s ease-out forwards',

@@ -3,7 +3,6 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ProgressBar from './components/ProgressBar'
 import Cursor from './components/Cursor'
-import FloatingCTA from './components/FloatingCTA'
 import LazySection from './components/LazySection'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import ChatWidget from './components/ChatWidget'
@@ -42,12 +41,11 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div id="main-content" className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-gray-50 pb-[72px] lg:pb-0 text-white dark:text-white light:text-neutral-900">
+      <div id="main-content" className="min-h-screen bg-[#0a0a0a] text-white">
         <Cursor />
         <ProgressBar />
         <PWAInstallPrompt lang={lang} />
-        <FloatingCTA lang={lang} />
-        <Navbar isScrolled={isScrolled} lang={lang} setLang={setLang} />
+        <Navbar isScrolled={isScrolled} lang={lang} />
         <Hero lang={lang} />
         <Suspense fallback={<SectionFallback />}>
           <LazySection fallback={<SectionFallback />} rootMargin="300px">

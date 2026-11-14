@@ -545,37 +545,7 @@ export default function Portfolio({ lang = 'en' }) {
         )}
       </AnimatePresence>
 
-      {/* Before/After Gallery */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="mt-16 md:mt-20"
-      >
-        <h3 className="font-display text-2xl md:text-3xl font-medium text-white mb-6 md:mb-8">Transformations</h3>
-        <BeforeAfterGallery
-          items={[
-            {
-              before: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=800&fit=crop',
-              after: 'https://images.unsplash.com/photo-1512918760382-e9fb6d2366d9?w=1200&h=800&fit=crop',
-              title: 'Modern Office Renovation',
-              description: 'Complete interior transformation of a traditional office space into a modern, collaborative workspace.'
-            },
-            {
-              before: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1200&h=800&fit=crop',
-              after: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&fit=crop',
-              title: 'Residential Living Room',
-              description: 'Before and after of a luxury living room renovation with custom lighting and finishes.'
-            },
-            {
-              before: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&fit=crop',
-              after: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop',
-              title: 'Kitchen Remodel',
-              description: 'Modern kitchen transformation with custom cabinetry and premium appliances.'
-            }
-          ]}
-        />
-      </motion.div>
+      {/* Before/After Gallery removed */}
 
       {/* Modal */}
       <AnimatePresence>

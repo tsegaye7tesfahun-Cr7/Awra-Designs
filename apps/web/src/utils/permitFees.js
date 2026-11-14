@@ -1,75 +1,56 @@
 /**
- * Ethiopian Building Permit Fee Calculator
- * Based on:
- * - Addis Ababa Regulation No. 134/2022, Schedule 4 (Construction cost estimation rates)
- * - Ethiopian Building Regulation No. 243/2011, Article 24 (Plan review and approval fees)
- * All values in ETB. Edit here to update rates site-wide.
+ * Building Permit Fee Calculator
+ * Formula:
+ *   basementCost = kare × basementRate
+ *   groundCost   = kare × groundRate(gPlus) × (gPlus + 1)
+ *   total        = basementCost + groundCost
+ *
+ * Ground rate is determined automatically from the G+ number entered:
+ *   G+0          → 30,000
+ *   G+1  – G+4   → 35,000
+ *   G+5  – G+9   → 45,000
+ *   G+10 – G+14  → 50,000
+ *   G+15 and above → 60,000
  */
 
-// ── Building Use/Type ───────────────────────────────────────────────────────
-export const BUILDING_USES = [
-  { value: 'residential', label: 'Residential / Administration' },
-  { value: 'hospital',    label: 'Hospital and Similar Buildings' },
+// ── Basement Options ─────────────────────────────────────────────────────────
+// basementCost = kare × rate
+export const BASEMENT_OPTIONS = [
+  { value: 'none',   label: 'No Basement',          rate: 0     },
+  { value: 'b1',     label: '1 Basement',            rate: 5000  },
+  { value: 'b2',     label: '2 Basements',           rate: 10000 },
+  { value: 'b3plus', label: '3 Basements and Above', rate: 15000 },
 ]
 
-// ── Structural Classification ───────────────────────────────────────────────
-export const STRUCTURAL_CLASSIFICATIONS = [
-  { value: 'without_rc', label: 'Without RC Footing' },
-  { value: 'with_rc',     label: 'With RC Footing' },
-]
-
-// ── Construction Cost Estimation Rates (Addis Ababa Regulation No. 134/2022, Schedule 4) ──
-// Rate per m² based on building use and classification
-export const CONSTRUCTION_RATES = {
-  residential: {
-    without_rc: 10_000,  // G+0 without RC footing
-    with_rc:     12_200,  // G+1 and above
-  },
-  hospital: {
-    without_rc: 20_000,  // G+0 and above
-    with_rc:     20_000,  // G+0 and above (same rate)
-  },
+/**
+ * Returns the per-m² ground rate for a given G+ number.
+ * @param {number} gPlus  — the number after "G+", e.g. 0 for G+0, 3 for G+3
+ * @returns {number} rate in ETB/m²
+ */
+export function getGroundRate(gPlus) {
+  if (gPlus === 0)              return 30000
+  if (gPlus >= 1  && gPlus <= 4)  return 35000
+  if (gPlus >= 5  && gPlus <= 9)  return 45000
+  if (gPlus >= 10 && gPlus <= 14) return 50000
+  return 60000  // G+15 and above
 }
 
-// ── Floor Count ─────────────────────────────────────────────────────────────
-export const FLOOR_COUNTS = [
-  { value: 0, label: 'G+0 (Ground Floor Only)' },
-  { value: 1, label: 'G+1' },
-  { value: 2, label: 'G+2' },
-  { value: 3, label: 'G+3' },
-  { value: 4, label: 'G+4' },
-  { value: 5, label: 'G+5' },
-  { value: 6, label: 'G+6' },
-  { value: 7, label: 'G+7' },
-  { value: 8, label: 'G+8' },
-  { value: 9, label: 'G+9' },
-  { value: 10, label: 'G+10' },
-  { value: 11, label: 'G+11' },
-  { value: 12, label: 'G+12' },
-  { value: 13, label: 'G+13' },
-  { value: 14, label: 'G+14' },
-  { value: 15, label: 'G+15' },
-  { value: 16, label: 'G+16' },
-  { value: 17, label: 'G+17' },
-  { value: 18, label: 'G+18' },
-  { value: 19, label: 'G+19' },
-  { value: 20, label: 'G+20' },
-]
+/**
+ * Returns a human-readable label for the rate tier.
+ * @param {number} gPlus
+ * @returns {string}
+ */
+export function getGroundLabel(gPlus) {
+  if (gPlus === 0)              return 'Villa (G+0)'
+  if (gPlus >= 1  && gPlus <= 4)  return 'G+1 – G+4'
+  if (gPlus >= 5  && gPlus <= 9)  return 'G+5 – G+9'
+  if (gPlus >= 10 && gPlus <= 14) return 'G+10 – G+14'
+  return 'Above G+14'
+}
 
-// ── Basement Levels ─────────────────────────────────────────────────────────
-export const BASEMENT_OPTIONS = [
-  { value: 0, label: 'No Basement' },
-  { value: 1, label: '1 Basement Level' },
-  { value: 2, label: '2 Basement Levels' },
-  { value: 3, label: '3 Basement Levels' },
-]
-
-// ── Planning Consent Fee ─────────────────────────────────────────────────────
-export const PLANNING_CONSENT_FEE = 300  // ETB, when applicable
-
-// ── Regulatory Information ────────────────────────────────────────────────
+// ── Regulatory Information ────────────────────────────────────────────────────
 export const REGULATORY_INFO = {
-  source: 'Addis Ababa Regulation No. 134/2022, Schedule 4 and Ethiopian Building Regulation No. 243/2011, Article 24',
-  disclaimer: 'This estimate is based on the official Ethiopian and Addis Ababa building permit fee regulations. It is provided for guidance only and is not an official government payment receipt. Always verify with the Addis Ababa City Administration before making any payments.',
-  lastUpdated: '2026-10-31',
+  source: 'Addis Ababa Building Permit Fee Schedule',
+  disclaimer: 'This estimate is provided for guidance only and is not an official government payment receipt. Always verify with the Addis Ababa City Administration before making any payments.',
+  lastUpdated: '2026-11-14',
 }

@@ -12,9 +12,9 @@ export default defineConfig({
       injectRegister: null,            // don't auto-inject — we do it in main.jsx
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-icon-*.svg', 'images/**/*'],
       manifest: {
-        name: 'Awra Finishing & Interior',
+        name: 'Awra Designs',
         short_name: 'Awra Designs',
-        description: 'Professional architectural design, interior planning, finishing work, and branding services in Addis Ababa, Ethiopia.',
+        description: 'Architecture, interior design, 3D visualization, finishing, and branding — Addis Ababa, Ethiopia.',
         theme_color: '#0a0a0a',
         background_color: '#0a0a0a',
         display: 'standalone',
@@ -22,13 +22,11 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
-          { src: '/favicon.ico', sizes: '64x64 32x32 16x16', type: 'image/x-icon', purpose: 'any' },
-          { src: '/favicon-16x16.png', sizes: '16x16', type: 'image/png', purpose: 'any' },
-          { src: '/favicon-32x32.png', sizes: '32x32', type: 'image/png', purpose: 'any' },
+          { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/apple-touch-icon.png',        sizes: '180x180', type: 'image/png', purpose: 'any' },
+          { src: '/favicon-32x32.png',           sizes: '32x32',   type: 'image/png', purpose: 'any' },
+          { src: '/favicon-16x16.png',           sizes: '16x16',   type: 'image/png', purpose: 'any' },
         ],
       },
       workbox: {

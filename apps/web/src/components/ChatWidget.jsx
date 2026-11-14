@@ -25,7 +25,7 @@ export default function ChatWidget() {
       // Welcome message
       const welcomeMsg = {
         id: 1,
-        text: "Hi! 👋 Welcome to Awra Designs. How can I help you today?",
+        text: "Hi! 👋 Welcome to Awra Designs. I can help you with our services, pricing, timelines, portfolio, and more. What would you like to know?",
         sender: 'bot',
         timestamp: new Date().toISOString()
       }
@@ -79,25 +79,111 @@ export default function ChatWidget() {
   }
 
   const generateBotResponse = (userInput) => {
-    const input = userInput.toLowerCase()
+    const msg = userInput.toLowerCase().trim()
 
-    if (input.includes('service') || input.includes('offer') || input.includes('do')) {
-      return "We offer architectural design, interior planning, finishing work, and branding services. Would you like to see our portfolio or discuss a specific project?"
-    } else if (input.includes('price') || input.includes('cost') || input.includes('rate')) {
-      return "Our pricing varies based on project scope and requirements. I'd be happy to arrange a consultation to provide you with a detailed quote. What type of project are you considering?"
-    } else if (input.includes('contact') || input.includes('email') || input.includes('phone')) {
-      return "You can reach us at contact@awradesigns.pro.et or call us at +251 911 234 567. You can also fill out the contact form on our website."
-    } else if (input.includes('location') || input.includes('where') || input.includes('address')) {
-      return "We're based in Addis Ababa, Ethiopia. Feel free to visit our office or schedule a site visit for your project."
-    } else if (input.includes('portfolio') || input.includes('work') || input.includes('project')) {
-      return "Check out our Work section to see our completed projects! We specialize in residential and commercial spaces. Would you like to see a specific type of project?"
-    } else if (input.includes('hello') || input.includes('hi') || input.includes('hey')) {
-      return "Hello! How can I assist you with your design project today?"
-    } else if (input.includes('thank')) {
-      return "You're welcome! If you have any more questions, feel free to ask. We're here to help!"
-    } else {
-      return "Thanks for your message! I'll pass this along to our team. For detailed inquiries, please use our contact form or email us directly. Is there anything specific about our services you'd like to know?"
+    // Greetings
+    if (/^(hi|hello|hey|good morning|good afternoon|good evening|selam|ሰላም)/.test(msg)) {
+      return "Hello! 👋 Great to have you here. Are you looking to start a new project, get a quote, or just explore what we do?"
     }
+
+    // Thanks
+    if (/thank|thanks|appreciated|great|perfect|awesome/.test(msg)) {
+      return "You're very welcome! Feel free to ask anything else — we're happy to help. 😊"
+    }
+
+    // Services — general
+    if (/service|offer|what do you do|specializ|work on|help with/.test(msg)) {
+      return "We offer a full range of design services:\n\n• Architecture & Building Design\n• Interior Design (residential & commercial)\n• 3D Visualization & Renders\n• Finishing & Fit-out Works\n• Building Permit Documentation\n• Branding & Visual Identity\n\nWould you like to know more about any of these?"
+    }
+
+    // Architecture
+    if (/architect|building design|floor plan|structural|construction drawing|permit drawing/.test(msg)) {
+      return "Our architecture team handles everything from initial concept and floor plans to full permit-ready drawing sets prepared to Addis Ababa Building Authority standards. We work on villas, apartments, office buildings, and commercial spaces."
+    }
+
+    // Interior design
+    if (/interior|bedroom|living room|kitchen|office interior|dining|lounge|suite|residential design/.test(msg)) {
+      return "Our interior design service covers space planning, material selection, furniture layout, lighting design, and full supervision through execution. We've completed 80+ residential interiors and 40+ commercial spaces across Ethiopia."
+    }
+
+    // 3D visualization / renders
+    if (/3d|render|visuali|walkthrough|animation|realistic|view|perspective/.test(msg)) {
+      return "Our 3D visualization service delivers photorealistic renders from multiple angles, material and lighting studies, and revision rounds based on your feedback. It's perfect for approving a design before construction starts — no surprises on site."
+    }
+
+    // Finishing / fit-out
+    if (/finish|fit.?out|fit out|tile|paint|ceiling|gypsum|cladding|flooring|fit-out/.test(msg)) {
+      return "Our finishing and fit-out team handles all interior surface work — gypsum ceilings, tiling, painting, joinery, and final detailing. We coordinate directly with contractors to make sure the design is executed exactly as intended."
+    }
+
+    // Building permit
+    if (/permit|ፍቃድ|kebele|municipality|authority|addis ababa permit|documentation|drawing set/.test(msg)) {
+      return "We prepare complete building permit documentation to Addis Ababa City Administration standards — including architectural, structural, and sanitary drawings. You can also use our Permit Fee Calculator on this site to estimate your costs before we begin."
+    }
+
+    // Branding
+    if (/brand|logo|identity|graphic|visual/.test(msg)) {
+      return "Our branding service covers logo design, brand identity systems, and visual communication materials — ideal for businesses launching alongside a new space."
+    }
+
+    // Pricing / cost
+    if (/price|cost|rate|fee|how much|budget|expensive|affordable|charge|payment/.test(msg)) {
+      return "Our pricing depends on project type, scale, and complexity. We offer:\n\n• Fixed-fee contracts for defined scopes\n• Percentage-of-cost models for larger builds\n\nWe provide a free initial estimate after a brief consultation. Would you like to arrange one?"
+    }
+
+    // Timeline / duration
+    if (/how long|timeline|duration|time|week|month|deadline|when/.test(msg)) {
+      return "Typical timelines:\n\n• Single room design: 4–8 weeks\n• Full apartment: 3–4 months\n• Commercial space: 4–6 months\n• Architecture + permit docs: 3–6 weeks\n\nWe share a detailed schedule at the proposal stage so you always know what to expect."
+    }
+
+    // Start a project / consultation
+    if (/start|begin|consult|how do i|get started|first step|initiate|new project/.test(msg)) {
+      return "Starting is simple:\n\n1. Reach out via WhatsApp, phone, or our contact form\n2. We schedule a free initial consultation\n3. We assess your space, vision, and budget\n4. You receive a tailored proposal within a few days\n\nWant me to take you to the contact section?"
+    }
+
+    // Free consultation
+    if (/free|consultation|initial meeting|no cost|first meeting/.test(msg)) {
+      return "Yes — we offer a free initial consultation! No commitment required. We use that session to understand your project, answer your questions, and figure out the best approach together."
+    }
+
+    // Portfolio / past work
+    if (/portfolio|past work|previous|example|sample|project|completed|show me/.test(msg)) {
+      return "Our portfolio is live on this page — scroll up to the Work section to browse completed projects. You can filter by category: Architecture, Residential Interiors, Commercial Design, and more. Each project includes photos and details."
+    }
+
+    // Location / outside Addis
+    if (/location|where|address|addis|ethiopia|outside|region|city|hawassa|dire dawa|mekelle|jimma/.test(msg)) {
+      return "Our studio is based in Addis Ababa. We take on projects across all of Ethiopia — for remote locations we coordinate closely through digital tools and make site visits at key milestones. Distance isn't a barrier for us."
+    }
+
+    // Contact / reach
+    if (/contact|email|phone|whatsapp|call|reach|get in touch|message/.test(msg)) {
+      return "You can reach us through:\n\n📱 WhatsApp: +251 92 381 4125\n📧 Email: info@awradesigns.com\n📍 Location: Addis Ababa, Ethiopia\n\nOr just scroll down to the Contact section and fill in the form — we respond within 24 hours."
+    }
+
+    // Team
+    if (/team|staff|architect|designer|founder|who|people/.test(msg)) {
+      return "Awra Designs was founded by Tesfahun Tsegaye, our Lead Architect. The team includes senior architects, interior designers, 3D artists, and a brand designer — all working together from our Addis Ababa studio."
+    }
+
+    // Experience / years
+    if (/experience|year|since|how long have|established|founded/.test(msg)) {
+      return "We've been designing and building spaces since 2019 — that's 7+ years of experience across 120+ completed projects in Ethiopia, ranging from private villas to commercial offices and hospitality spaces."
+    }
+
+    // Reviews / testimonials
+    if (/review|testimonial|feedback|client|rating|trust|recommend/.test(msg)) {
+      return "We're proud of the relationships we build with clients. You can read testimonials from past clients in the Testimonials section of this page. We've worked with 100+ satisfied clients across Ethiopia."
+    }
+
+    // Default fallback — varied so it doesn't always feel the same
+    const fallbacks = [
+      "That's a great question! For detailed answers, our team is best placed to help. Would you like to contact us via WhatsApp or through the contact form?",
+      "I want to make sure you get the right answer. Could you tell me a bit more about your project or what you're looking for?",
+      "I'm not sure I fully understand — could you rephrase that? Or if you'd prefer to speak directly with our team, just head to the Contact section below.",
+      "Thanks for reaching out! For specific project queries, our team can give you a much more tailored answer. Want me to point you to our contact form?",
+    ]
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)]
   }
 
   const clearChat = () => {
@@ -145,8 +231,8 @@ export default function ChatWidget() {
             {/* Header */}
             <div className="bg-neutral-800 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-lg">🏠</span>
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden border border-neutral-200">
+                  <img src="/Logo.svg" alt="Awra Designs" className="w-7 h-7 object-contain" />
                 </div>
                 <div>
                   <h3 className="text-white font-medium text-sm">Awra Designs</h3>

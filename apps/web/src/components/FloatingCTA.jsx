@@ -45,7 +45,7 @@ export default function FloatingCTA({ lang = 'en' }) {
               <a
                 href={waHref}
                 target="_blank" rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-[#0a0a0a] text-xs font-medium tracking-wide"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gold text-[#0a0a0a] text-xs font-medium tracking-wide"
                 aria-label="Chat on WhatsApp"
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">

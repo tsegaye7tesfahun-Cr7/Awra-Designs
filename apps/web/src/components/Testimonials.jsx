@@ -55,12 +55,12 @@ export default function Testimonials() {
           <div className="flex flex-col gap-1">
             {testimonials.map((t, i) => (
               <button key={t.id} onClick={() => setCurrent(i)}
-                className={`flex items-center gap-3 px-3 py-3 text-left transition-all duration-300 border-l-2 ${i === current ? 'border-white bg-neutral-900/50' : 'border-transparent hover:border-neutral-700'}`}>
+                className={`flex items-center gap-3 px-3 py-3 text-left transition-all duration-300 border-l-2 ${i === current ? 'border-gold bg-gold/5' : 'border-transparent hover:border-neutral-700'}`}>
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden flex-shrink-0 bg-neutral-800">
                   {t.image && <img src={t.image} alt={t.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium truncate transition-colors ${i === current ? 'text-white' : 'text-neutral-500'}`}>{t.name}</p>
+                  <p className={`text-sm font-medium truncate transition-colors ${i === current ? 'text-gold' : 'text-neutral-500'}`}>{t.name}</p>
                   <p className="label-text mt-0.5 truncate">{t.role}</p>
                 </div>
               </button>
@@ -86,7 +86,7 @@ export default function Testimonials() {
         <div className="flex gap-2 mt-8 md:mt-10">
           {testimonials.map((_, i) => (
             <button key={i} onClick={() => setCurrent(i)}
-              className={`h-px transition-all duration-300 min-w-[12px] ${i === current ? 'w-8 bg-white' : 'w-4 bg-neutral-700 hover:bg-neutral-500'}`}
+              className={`h-px transition-all duration-300 min-w-[12px] ${i === current ? 'w-8 bg-gold' : 'w-4 bg-neutral-700 hover:bg-neutral-500'}`}
               aria-label={`Go to testimonial ${i + 1}`} />
           ))}
         </div>
